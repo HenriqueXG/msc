@@ -39,7 +39,7 @@ class Img2Vec():
         """
         image = self.normalize(self.to_tensor(self.scaler(img))).unsqueeze(0).to(self.device)
 
-        my_embedding = torch.zeros(1, self.layer_output_size, 1, 1)
+        my_embedding = torch.zeros(1, 1, 1, self.layer_output_size)
 
         def copy_data(m, i, o):
             my_embedding.copy_(o.data)
@@ -51,7 +51,7 @@ class Img2Vec():
         if tensor:
             return my_embedding
         else:
-            return my_embedding.numpy()[0, :, 0, 0]
+            return my_embedding.numpy()[0, 0, 0, :]
 
     def _get_model_and_layer(self, model_name, layer):
         """ Internal method for getting layer from model
@@ -63,30 +63,19 @@ class Img2Vec():
             model = models.resnet18(pretrained=True)
 
             if layer == 'default':
-                layer = model._modules.get('avgpool')
-                self.layer_output_size = 512
+                layer = model._modules.get('fc')
+                self.layer_output_size = 1000
             else:
                 layer = model._modules.get(layer)
 
             return model, layer
 
-        # elif model_name == 'alexnet':
-        #     model = models.alexnet(pretrained=True)
-        #
-        #     if layer == 'default':
-        #         layer = model.classifier[-1]
-        #         self.layer_output_size = 4096
-        #     else:
-        #         layer = model.classifier[-layer]
-        #
-        #     return model, layer
-
         elif model_name == 'resnet-50':
             model = models.resnet50(pretrained=True)
 
             if layer == 'default':
-                layer = model._modules.get('avgpool')
-                self.layer_output_size = 2048
+                layer = model._modules.get('fc')
+                self.layer_output_size = 1000
             else:
                 layer = model._modules.get(layer)
 
@@ -108,8 +97,8 @@ class Img2Vec():
             model.load_state_dict(file)
 
             if layer == 'default':
-                layer = model._modules.get('avgpool')
-                self.layer_output_size = 512
+                layer = model._modules.get('fc')
+                self.layer_output_size = 365
             else:
                 layer = model._modules.get(layer)
 
@@ -131,23 +120,34 @@ class Img2Vec():
             model.load_state_dict(file)
 
             if layer == 'default':
-                layer = model._modules.get('avgpool')
-                self.layer_output_size = 2048
+                layer = model._modules.get('fc')
+                self.layer_output_size = 365
             else:
                 layer = model._modules.get(layer)
 
             return model, layer
 
-        # elif model_name == 'vgg-11':
-        #     model = models.vgg11(pretrained=True)
-        #     print(model)
-        #     if layer == 'default':
-        #         layer = model.classifier[-1]
-        #         self.layer_output_size = 4096
-        #     else:
-        #         layer = model._modules.get(layer)
-        #
-        #     return model, layer
+        elif model_name == 'vgg-11':
+            model = models.vgg11(pretrained=True)
+
+            if layer == 'default':
+                layer = model.classifier[0]
+                self.layer_output_size = 4096
+            else:
+                layer = model._modules.get(layer)
+
+            return model, layer
+
+        elif model_name == 'alexnet':
+            model = models.alexnet(pretrained=True)
+
+            if layer == 'default':
+                layer = model.classifier[-2]
+                self.layer_output_size = 4096
+            else:
+                layer = model.classifier[-layer]
+
+            return model, layer
 
         else:
             raise KeyError('Model %s was not found' % model_name)

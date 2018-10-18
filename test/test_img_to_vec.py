@@ -13,7 +13,7 @@ from img_to_vec import Img2Vec
 
 input_path = config['path'] + '/test/test_images'
 
-img2vec = Img2Vec(model='resnet-18')
+img2vec = Img2Vec(model='resnet-50')
 
 # For each test image, we store the filename and vector as key, value in a dictionary
 pics = {}
@@ -23,7 +23,7 @@ for file in os.listdir(input_path):
     vec = img2vec.get_vec(img)
     pics[filename] = vec
 
-pic_name = 'face.jpg'
+pic_name = 'cat.jpg'
 # pic_name = str(input("Which filename would you like similarities for?\n"))
 
 sims = {}
