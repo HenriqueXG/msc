@@ -18,6 +18,8 @@ class Img2Vec():
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
+        self.layer_output_size_pool = 1
+
         self.device = torch.device("cuda" if cuda else "cpu")
         self.layer_output_size = layer_output_size
         self.model, self.extraction_layer = self._get_model_and_layer(model, layer)
@@ -39,7 +41,7 @@ class Img2Vec():
         """
         image = self.normalize(self.to_tensor(self.scaler(img))).unsqueeze(0).to(self.device)
 
-        my_embedding = torch.zeros(1, 1, 1, self.layer_output_size)
+        my_embedding = torch.zeros(1, self.layer_output_size_pool, 1, self.layer_output_size)
 
         def copy_data(m, i, o):
             my_embedding.copy_(o.data)
@@ -51,7 +53,7 @@ class Img2Vec():
         if tensor:
             return my_embedding
         else:
-            return my_embedding.numpy()[0, 0, 0, :]
+            return my_embedding.numpy()[0, :, 0, :]
 
     def _get_model_and_layer(self, model_name, layer):
         """ Internal method for getting layer from model
@@ -63,8 +65,9 @@ class Img2Vec():
             model = models.resnet18(pretrained=True)
 
             if layer == 'default':
-                layer = model._modules.get('fc')
-                self.layer_output_size = 1000
+                layer = model._modules.get('avgpool')
+                self.layer_output_size_pool = 512
+                self.layer_output_size = 1
             else:
                 layer = model._modules.get(layer)
 
@@ -74,8 +77,9 @@ class Img2Vec():
             model = models.resnet50(pretrained=True)
 
             if layer == 'default':
-                layer = model._modules.get('fc')
-                self.layer_output_size = 1000
+                layer = model._modules.get('avgpool')
+                self.layer_output_size = 1
+                self.layer_output_size_pool = 2048
             else:
                 layer = model._modules.get(layer)
 
@@ -99,6 +103,7 @@ class Img2Vec():
             if layer == 'default':
                 layer = model._modules.get('fc')
                 self.layer_output_size = 365
+                self.layer_output_size_pool = 1
             else:
                 layer = model._modules.get(layer)
 
@@ -122,6 +127,7 @@ class Img2Vec():
             if layer == 'default':
                 layer = model._modules.get('fc')
                 self.layer_output_size = 365
+                self.layer_output_size_pool = 1
             else:
                 layer = model._modules.get(layer)
 
@@ -133,6 +139,7 @@ class Img2Vec():
             if layer == 'default':
                 layer = model.classifier[0]
                 self.layer_output_size = 4096
+                self.layer_output_size_pool = 1
             else:
                 layer = model._modules.get(layer)
 
@@ -144,6 +151,7 @@ class Img2Vec():
             if layer == 'default':
                 layer = model.classifier[-2]
                 self.layer_output_size = 4096
+                self.layer_output_size_pool = 1
             else:
                 layer = model.classifier[-layer]
 
