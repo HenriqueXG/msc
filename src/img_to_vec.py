@@ -5,7 +5,6 @@ import torchvision.transforms as transforms
 import json
 
 class Img2Vec():
-
     def __init__(self, cuda=False, model='resnet-18', layer='default', layer_output_size=512):
         """ Img2Vec
         :param cuda: If set to True, will run forward pass on GPU
