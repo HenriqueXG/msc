@@ -11,7 +11,7 @@ from PIL import Image
 from fnmatch import fnmatch
 
 class Graph():
-    def __init__(self):
+    def __init__(self, arch = 'resnet-18-ImageNet'):
 
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
@@ -32,9 +32,11 @@ class Graph():
             print('Graph data not found!')
             self.graph = {}
 
-            sys.path.append(os.path.join(self.config['path'], 'src'))
-            from img_to_vec import Img2Vec
-            arch = 'resnet-18'
+            try:
+                from lib.img_to_vec import Img2Vec
+            except ImportError:
+                from src.img_to_vec import Img2Vec
+
             self.img2vec = Img2Vec(model = arch)
 
             self.train()
@@ -54,8 +56,10 @@ class Graph():
                     img = Image.open(os.path.join(path, name))
                     img_name = name.replace('.jpg','')
                     width, height = img.size
-                    if np.array(img).shape[2] != 3:
-                        img = np.resize(img, (height, width, 3))
+
+                    if len(np.array(img).shape) != 3:
+                        img = np.stack((img,)*3, axis=-1)
+                        img = Image.fromarray(np.uint8(img))
 
                     objects = self.annotations[img_name]['annotation']['object']
                     for i, obj in enumerate(objects):
@@ -73,10 +77,9 @@ class Graph():
 
                             angles, neighbours = self.relation_obj(cx, cy, img_name, i, height)
 
-                            box = (x1,y1,x2,y2)
+                            box = (x1, y1, x2, y2)
                             region = img.crop(box)
                             vec = self.img2vec.get_vec(region)
-                            # vec = np.array([0,0])
 
                             node = self.graph.get(obj['name'])
                             if node:
@@ -111,7 +114,7 @@ class Graph():
                             y1 = int(objects['bndbox']['ymin'])
                             y2 = int(objects['bndbox']['ymax'])
 
-                            box = (x1,y1,x2,y2)
+                            box = (x1, y1, x2, y2)
                             region = img.crop(box)
                             vec = self.img2vec.get_vec(region)
 
@@ -124,14 +127,12 @@ class Graph():
 
                             break
 
-
-
         with open(os.path.join(self.config['path'], 'data/graph.json'), 'w') as fp:
             json.dump(self.graph, fp, sort_keys=True, indent=4)
 
 
     def relation_obj(self, cx_a, cy_a, img_name, idx, height):
-        # Calculate angle between objects identify their neighbours
+        # Calculate angle between objects and identify their neighbours
         angles = {}
         neighbours = {}
 

@@ -6,18 +6,19 @@ import json
 from torch.nn import functional as F
 from torchvision import transforms as trn
 from torch.autograd import Variable as V
+import torchvision.transforms as transforms
 
 config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-sys.path.append(config['path'] + '/src')
+sys.path.append(os.path.join(config['path'], 'src'))
 from img_to_vec import Img2Vec
 
-input_path = config['path'] + '/test/test_images'
+input_path = os.path.join(config['path'], 'test', 'test_images')
 
-arch = 'resnet-50'
-img2vec = Img2Vec(model=arch)
+arch = 'resnet-18-ImageNet'
+img2vec = Img2Vec(model = arch)
 
 # For each test image, we store the filename and vector as key, value in a dictionary
 pics = {}
@@ -27,8 +28,7 @@ for file in os.listdir(input_path):
     vec = img2vec.get_vec(img)
     pics[filename] = vec
 
-pic_name = 'cat.jpg'
-# pic_name = str(input("Which filename would you like similarities for?\n"))
+pic_name = 'catdog.jpg' # The image that will be compared with other ones
 
 ####################################### SIMILARITY #######################################
 
@@ -47,8 +47,8 @@ for v, k in d_view:
 print('-------------------------------')
 
 ####################################### PREDICTION #######################################
-if arch.find('Places') == -1:
-    class_path = config['path'] + '/data/imagenet1000_clsid_to_human.txt'
+if arch.find('ImageNet') != -1:
+    class_path = os.path.join(config['path'], 'data', 'imagenet1000_clsid_to_human.txt')
 
     classes = list()
     with open(class_path) as class_file:
@@ -61,15 +61,12 @@ if arch.find('Places') == -1:
             classes.append(l)
     classes = tuple(classes)
 
-    centre_crop = trn.Compose([
-            trn.Resize((256,256)),
-            # trn.CenterCrop(224),
-            trn.ToTensor(),
-            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
+    scaler = transforms.Resize((224, 224))
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    to_tensor = transforms.ToTensor()
 
-    # input_img = img2vec.normalize(img2vec.to_tensor(img2vec.scaler(Image.open(os.path.join(input_path, pic_name))))).unsqueeze(0).to(img2vec.device)
-    input_img = V(centre_crop(Image.open(os.path.join(input_path, pic_name))).unsqueeze(0))
+    img = Image.open(os.path.join(input_path, pic_name))
+    input_img = normalize(to_tensor(scaler(img))).unsqueeze(0).to(img2vec.device)
 
     # forward pass
     logit = img2vec.model.forward(input_img)

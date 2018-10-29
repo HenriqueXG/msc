@@ -1,4 +1,17 @@
 data/*
 *__pycache__*
+lib/*.so
+*.c
+main
+build
+CMakeFiles
+CMakeCache.txt
+CMakeLists.txt.plus
+Makefile
+cmake_install.cmake
+main_autogen/
+.idea*
+.remote-sync.json
+nohup.out
 
 !data/.gitkeep

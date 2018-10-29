@@ -1,3 +1,5 @@
 {
-    "path":"/home/henrique/msc"
+    "path":"/home/henrique/msc",
+    "arch_obj":"resnet-18-ImageNet",
+    "arch_scene":"resnet-18-Places"
 }
