@@ -16,10 +16,8 @@ annotations = {}
 with open(os.path.join(config['path'], 'data/sun2012_ann.json'), 'r') as fp:
     annotations = json.load(fp)
 
-img_name = 'sun_akbocuwclkxqlofx'
+img_name = 'sun_aiatoxvclffgxjts'
 img = Image.open(os.path.join(config['path'], 'data/SUN2012pascalformat/JPEGImages/', img_name) + '.jpg')
-img = np.stack((img,)*3, axis=-1)
-img = Image.fromarray(np.uint8(img))
 
 fig, ax = plt.subplots(1)
 

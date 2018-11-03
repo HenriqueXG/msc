@@ -1,4 +1,5 @@
 # Get sun annotation data
+## Henrique X. Goulart
 
 import os
 import xmltodict
@@ -8,7 +9,9 @@ config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-if os.path.exists(os.path.join(config['path'], 'data/sun2012_ann.json')):
+ann_path = os.path.join(config['path'], 'data/sun2012_ann.json')
+
+if os.path.exists(ann_path):
     pass
 else:
     print('Annotations data not found!')
@@ -30,5 +33,5 @@ else:
         except:
             print(f)
 
-    with open(os.path.join(config['path'], 'data/sun2012_ann.json'), 'w') as fp:
+    with open(ann_path, 'w') as fp:
         json.dump(annotations, fp, sort_keys=True, indent=4)
