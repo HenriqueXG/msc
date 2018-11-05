@@ -19,7 +19,7 @@ except ImportError:
     from src.declarative import Declarative
 
 if __name__ == '__main__':
-    # graph = Graph(arch = config['arch_obj'])
-    declarative = Declarative(arch = config['arch_scene'])
+    graph = Graph(arch = config['arch_obj'])
+    declarative = Declarative(graph)
 
-    # declarative.test_scene_indoor()
+    declarative.test_scene_indoor()

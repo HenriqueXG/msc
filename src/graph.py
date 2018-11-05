@@ -8,6 +8,7 @@ import sys
 import math
 import numpy as np
 from PIL import Image
+from scipy import spatial
 from fnmatch import fnmatch
 
 class Graph():
@@ -23,7 +24,7 @@ class Graph():
         else:
             print('Annotations data not found!')
 
-        self.graph_path = os.path.join(self.config['path'], 'data', 'sun2012_ann.json')
+        self.graph_path = os.path.join(self.config['path'], 'data', 'sun2012_graph.json')
         if os.path.exists(self.graph_path):
             print('Loading graph')
             with open(self.graph_path, 'r') as fp:
@@ -194,3 +195,19 @@ class Graph():
                 neighbours[obj['name']] = 1
 
         return angles, neighbours
+
+    def get_obj(self, vec):
+        # Get the nearest vector on graph
+        distance = np.inf
+        obj = ''
+
+        for k, v in self.graph.items():
+            obj_vec = v['vec']
+
+            d = spatial.distance.cosine(vec, obj_vec)
+
+            if d < distance:
+                distance = d
+                obj = k
+
+        return obj

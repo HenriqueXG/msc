@@ -11,7 +11,9 @@ from scipy import spatial
 from fnmatch import fnmatch
 
 class Declarative():
-    def __init__(self, arch = 'resnet-18-Places'):
+    def __init__(self, graph):
+
+        self.graph = graph
 
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
@@ -26,7 +28,8 @@ class Declarative():
         except ImportError:
             from src.img_to_vec import Img2Vec
 
-        self.img2vec = Img2Vec(model = arch)
+        self.img2vec = Img2Vec(model = self.config['arch_scene'])
+        self.reg2vec = Img2Vec(model = self.config['arch_obj'])
 
         self.declarative_path = os.path.join(self.config['path'], 'data', 'declarative_data.json')
         if os.path.exists(self.declarative_path):
@@ -180,9 +183,36 @@ class Declarative():
         with open(os.path.join(self.config['path'], 'data', 'declarative_data.json'), 'w') as fp:
             json.dump(self.declarative_data, fp, sort_keys=True, indent=4)
 
+    def extract_regions(self, img):
+        # Extract Sub-images vectors
+        region_vectors = []
+        width, height = img.size
+
+        box = (0, 0, int(width/2), int(height/2)) # 1st region
+        region = img.crop(box)
+        vec = self.reg2vec.get_vec(region)
+        region_vectors.append(vec)
+
+        box = (int(width/2), 0, int(width), int(height/2)) # 2nd region
+        region = img.crop(box)
+        vec = self.reg2vec.get_vec(region)
+        region_vectors.append(vec)
+
+        box = (0, int(height/2), int(width/2), int(height)) # 3rd region
+        region = img.crop(box)
+        vec = self.reg2vec.get_vec(region)
+        region_vectors.append(vec)
+
+        box = (int(width/2), int(height/2), int(width), int(height)) # 4th region
+        region = img.crop(box)
+        vec = self.reg2vec.get_vec(region)
+        region_vectors.append(vec)
+
+        return region_vectors
+
     def test_scene_indoor(self):
         # Test on MIT Indoor 67
-        print('Training Declarative Memory - Scenes - MIT Indoor 67')
+        print('Testing Declarative Memory - Scenes Vectors - MIT Indoor 67')
 
         acc = 0.0
         acc2 = 0.0
@@ -204,23 +234,39 @@ class Declarative():
                 vec = self.img2vec.get_vec(img)
 
                 distance = np.inf
-                similarity = 0.0
                 pred_class = ''
-                pred_class2 = ''
 
                 for class_name, class_vec in self.declarative_data['scene_vectors'].items():
-                    d = spatial.distance.cosine(vec, np.array(class_vec))
+                    d = spatial.distance.cosine(vec, class_vec)
 
                     if d < distance:
                         pred_class = class_name
                         distance = d
-                    if d > similarity:
-                        pred_class2 = class_name
-                        similarity = d
 
                 if pred_class == scene_class:
                     acc += 1.0
-                if pred_class2 == scene_class:
-                    acc2 += 1.0
 
-        print('Accuracy on MIT Indoor 67: {} | {}'.format(acc/length, acc2/length))
+                region_vectors = self.extract_regions(img)
+
+                objects = []
+                for reg in region_vectors:
+                    objects.append(self.graph.get_obj(reg))
+
+                for co_occurrence in self.declarative_data['co_occurrences']:
+                    if all(elem in co_occurrence['co_occurrence'] for elem in objects):
+                        distance = np.inf
+                        pred_class = ''
+
+                        for class_name, class_vec in self.declarative_data['scene_vectors'].items():
+                            d = spatial.distance.cosine(co_occurrence['scene_vec'], class_vec)
+
+                            if d < distance:
+                                pred_class = class_name
+                                distance = d
+
+                        if pred_class == scene_class:
+                            acc2 += 1.0
+
+                        break
+
+        print('Accuracy on MIT Indoor 67: {} / {}'.format(acc/length, acc2/length))
