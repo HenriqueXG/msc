@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 # Rename compiled libs
+## Henrique X. Goulart
 
 import os
 from fnmatch import fnmatch

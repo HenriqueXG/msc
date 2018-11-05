@@ -1,5 +1,6 @@
 {
     "path":"/home/henrique/msc",
     "arch_obj":"resnet-18-ImageNet",
-    "arch_scene":"resnet-18-Places"
+    "arch_scene":"resnet-18-Places",
+    "dataset":"indoor"
 }

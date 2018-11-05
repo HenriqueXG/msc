@@ -16,16 +16,16 @@ class Graph():
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
-        self.ann_path = os.path.join(self.config['path'], 'data/sun2012_ann.json')
+        self.ann_path = os.path.join(self.config['path'], 'data', 'sun2012_ann.json')
         if os.path.exists(self.ann_path):
             with open(self.ann_path, 'r') as fp:
                 self.annotations = json.load(fp)
         else:
             print('Annotations data not found!')
 
-        self.graph_path = os.path.join(self.config['path'], 'data/graph.json')
+        self.graph_path = os.path.join(self.config['path'], 'data', 'sun2012_ann.json')
         if os.path.exists(self.graph_path):
-            print('Loading Graph')
+            print('Loading graph')
             with open(self.graph_path, 'r') as fp:
                 self.graph = json.load(fp)
         else:
@@ -39,27 +39,40 @@ class Graph():
 
             self.img2vec = Img2Vec(model = arch)
 
-            self.train()
+            self.train_sun()
 
-    def train(self):
-        # Create Graph
-        print('Training Graph')
+    def img_channels(self, img):
+        # Reshape for 3-channels
+        if len(np.array(img).shape) != 3:
+            img = np.stack((img,)*3, axis=-1)
+            img = Image.fromarray(np.uint8(img))
+        elif np.array(img).shape[2] > 3:
+            img = img.convert('RGB')
+            img = np.asarray(img, dtype=np.float32)
+            img = img[:, :, :3]
+            img = Image.fromarray(np.uint8(img))
+
+        return img
+
+    def train_sun(self):
+        # Create graph of SUN 2012
+        print('Training graph - SUN 2012')
 
         pattern = '*.jpg'
-        root = os.path.join(self.config['path'], 'data/SUN2012pascalformat/JPEGImages/')
+        root = os.path.join(self.config['path'], 'data', 'SUN2012pascalformat', 'JPEGImages')
 
         for path, subdirs, files in os.walk(root):
+            length = len(files)
+
             for idx, name in enumerate(files):
-                sys.stdout.write(name + ' -- ' + str(idx+1) + '/' + str(len(files)) + '\r')
+                sys.stdout.write(name + ' -- ' + str(idx+1) + '/' + str(length) + '\r')
 
                 if fnmatch(name, pattern):
                     img = Image.open(os.path.join(path, name))
-                    img_name = name.replace('.jpg','')
+                    img_name = os.path.splitext(name)[0] # Remove extension
                     width, height = img.size
 
-                    if len(np.array(img).shape) != 3:
-                        img = np.stack((img,)*3, axis=-1)
-                        img = Image.fromarray(np.uint8(img))
+                    img = self.img_channels(img)
 
                     objects = self.annotations[img_name]['annotation']['object']
                     for i, obj in enumerate(objects):
@@ -127,9 +140,8 @@ class Graph():
 
                             break
 
-        with open(os.path.join(self.config['path'], 'data/graph.json'), 'w') as fp:
+        with open(os.path.join(self.config['path'], 'data', 'graph.json'), 'w') as fp:
             json.dump(self.graph, fp, sort_keys=True, indent=4)
-
 
     def relation_obj(self, cx_a, cy_a, img_name, idx, height):
         # Calculate angle between objects and identify their neighbours
@@ -142,10 +154,22 @@ class Graph():
                 continue
 
             try:
-                x1 = int(obj['bndbox']['xmin'])
-                x2 = int(obj['bndbox']['xmax'])
-                y1 = int(obj['bndbox']['ymin'])
-                y2 = int(obj['bndbox']['ymax'])
+                if self.config['dataset'] == 'indoor':
+                    x = []
+                    y = []
+                    for p in obj['polygon']['pt']:
+                        x.append(int(p['x']))
+                        y.append(int(p['y']))
+
+                    x1 = min(x)
+                    x2 = max(x)
+                    y1 = min(y)
+                    y2 = max(y)
+                elif self.config['dataset'] == 'sun2012':
+                    x1 = int(obj['bndbox']['xmin'])
+                    x2 = int(obj['bndbox']['xmax'])
+                    y1 = int(obj['bndbox']['ymin'])
+                    y2 = int(obj['bndbox']['ymax'])
             except TypeError:
                 return {},{}
 

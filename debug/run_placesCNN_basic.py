@@ -41,7 +41,7 @@ centre_crop = trn.Compose([
 ])
 
 # load the class label
-file_name = config['path'] + '/data/categories_places365.txt'
+file_name = os.path.join(config['path'], 'data', 'categories_places365.txt')
 if not os.access(file_name, os.W_OK):
     synset_url = 'https://raw.githubusercontent.com/csailvision/places365/master/categories_places365.txt'
     os.system('wget ' + synset_url)
@@ -52,7 +52,7 @@ with open(file_name) as class_file:
 classes = tuple(classes)
 
 # load the test image
-img_name = config['path'] + '/test/test_images/12.jpg'
+img_name = os.path.join(config['path'], 'test', 'test_images', '12.jpg')
 if not os.access(img_name, os.W_OK):
     img_url = 'http://places.csail.mit.edu/demo/' + img_name
     os.system('wget ' + img_url)

@@ -1,3 +1,5 @@
+## Henrique X. Goulart
+
 import json
 import sys
 import os
@@ -11,8 +13,13 @@ sys.path.append(config['path'])
 
 try:
     from lib.graph import Graph
+    from lib.declarative import Declarative
 except ImportError:
     from src.graph import Graph
+    from src.declarative import Declarative
 
 if __name__ == '__main__':
-    graph = Graph(arch = config['arch_obj'])
+    # graph = Graph(arch = config['arch_obj'])
+    declarative = Declarative(arch = config['arch_scene'])
+
+    # declarative.test_scene_indoor()

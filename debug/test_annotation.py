@@ -13,11 +13,11 @@ with open('config.json', 'r') as fp:
     config = json.load(fp)
 
 annotations = {}
-with open(os.path.join(config['path'], 'data/sun2012_ann.json'), 'r') as fp:
+with open(os.path.join(config['path'], 'data', 'sun2012_ann.json'), 'r') as fp:
     annotations = json.load(fp)
 
 img_name = 'sun_aiatoxvclffgxjts'
-img = Image.open(os.path.join(config['path'], 'data/SUN2012pascalformat/JPEGImages/', img_name) + '.jpg')
+img = Image.open(os.path.join(config['path'], 'data', 'SUN2012pascalformat', 'JPEGImages', img_name) + '.jpg')
 
 fig, ax = plt.subplots(1)
 
