@@ -6,12 +6,11 @@ import json
 import os
 
 class Img2Vec():
-    def __init__(self, cuda=False, model='resnet-18-ImageNet', layer='default', layer_output_size=512):
+    def __init__(self, cuda=False, model='resnet-18-ImageNet', layer='default'):
         """ Img2Vec
         :param cuda: If set to True, will run forward pass on GPU
         :param model: String name of requested model
         :param layer: String or Int depending on model.  See more docs: https://github.com/christiansafka/img2vec.git
-        :param layer_output_size: Int depicting the output size of the requested layer
         """
 
         self.config = {}
@@ -19,10 +18,8 @@ class Img2Vec():
             self.config = json.load(fp)
 
         self.layer_output_size_pool = 1
-        self.layer_dim2 = 1
 
         self.device = torch.device("cuda" if cuda else "cpu")
-        self.layer_output_size = layer_output_size
         self.model, self.extraction_layer = self._get_model_and_layer(model, layer)
 
         self.model = self.model.to(self.device)
@@ -42,7 +39,7 @@ class Img2Vec():
         """
         image = self.normalize(self.to_tensor(self.scaler(img))).unsqueeze(0).to(self.device)
 
-        my_embedding = torch.zeros(1, self.layer_output_size_pool, self.layer_dim2, self.layer_output_size)
+        my_embedding = torch.zeros(1, self.layer_output_size_pool, 1, 1)
 
         def copy_data(m, i, o):
             my_embedding.copy_(o.data)
@@ -54,7 +51,7 @@ class Img2Vec():
         if tensor:
             return my_embedding
         else:
-            return my_embedding.numpy()[0, :, 0, :]
+            return my_embedding.numpy()[0, :, 0, 0]
 
     def _get_model_and_layer(self, model_name, layer):
         """ Internal method for getting layer from model
@@ -79,7 +76,6 @@ class Img2Vec():
 
             if layer == 'default':
                 layer = model._modules.get('avgpool')
-                self.layer_output_size = 1
                 self.layer_output_size_pool = 2048
             else:
                 layer = model._modules.get(layer)
@@ -104,7 +100,6 @@ class Img2Vec():
 
             if layer == 'default':
                 layer = model._modules.get('avgpool')
-                self.layer_output_size = 1
                 self.layer_output_size_pool = 512
             else:
                 layer = model._modules.get(layer)
@@ -128,36 +123,9 @@ class Img2Vec():
 
             if layer == 'default':
                 layer = model._modules.get('avgpool')
-                self.layer_output_size = 1
                 self.layer_output_size_pool = 2048
             else:
                 layer = model._modules.get(layer)
-
-            return model, layer
-
-        elif model_name == 'vgg-11':
-            model = models.vgg11(pretrained=True)
-
-            if layer == 'default':
-                layer = model.features[-1]
-                self.layer_output_size = 7
-                self.layer_output_size_pool = 512
-                self.layer_dim2 = 7
-            else:
-                layer = model._modules.get(layer)
-
-            return model, layer
-
-        elif model_name == 'alexnet':
-            model = models.alexnet(pretrained=True)
-
-            if layer == 'default':
-                layer = model.features[-1]
-                self.layer_output_size = 6
-                self.layer_output_size_pool = 256
-                self.layer_dim2 = 6
-            else:
-                layer = model.classifier[-layer]
 
             return model, layer
 

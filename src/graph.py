@@ -141,7 +141,7 @@ class Graph():
 
                             break
 
-        with open(os.path.join(self.config['path'], 'data', 'graph.json'), 'w') as fp:
+        with open(os.path.join(self.config['path'], 'data', 'sun2012_graph.json'), 'w') as fp:
             json.dump(self.graph, fp, sort_keys=True, indent=4)
 
     def relation_obj(self, cx_a, cy_a, img_name, idx, height):
@@ -211,3 +211,12 @@ class Graph():
                 obj = k
 
         return obj
+
+    def get_subgraph(self, obj):
+        # Extract node neighbours
+        neighbours = []
+
+        for ngb, freq in self.graph[obj]['neighbours'].items():
+            neighbours.append(ngb)
+
+        return neighbours

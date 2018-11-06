@@ -4,10 +4,10 @@
 import json
 import os
 import sys
+import pickle
 import numpy as np
 from PIL import Image
 from pathlib import Path
-from scipy import spatial
 from fnmatch import fnmatch
 
 class Declarative():
@@ -157,6 +157,9 @@ class Declarative():
         path_train = os.path.join(self.config['path'], 'data', 'TrainImages.txt')
         length = len(open(path_train).readlines())
 
+        X_train = []
+        Y_train = []
+
         with open(path_train, 'r', encoding='ISO-8859-1') as archive:
             for idx, line in enumerate(archive):
                 try:
@@ -171,6 +174,9 @@ class Declarative():
 
                     vec = self.img2vec.get_vec(img)
 
+                    X_train.append(vec)
+                    Y_train.append(scene_class)
+
                     scene_vec = self.declarative_data['scene_vectors'].get(scene_class)
                     if scene_vec:
                         self.declarative_data['scene_vectors'][scene_class] = (np.array(scene_vec) + vec).tolist()
@@ -182,6 +188,10 @@ class Declarative():
 
         with open(os.path.join(self.config['path'], 'data', 'declarative_data.json'), 'w') as fp:
             json.dump(self.declarative_data, fp, sort_keys=True, indent=4)
+
+        train_data = {'X':X_train, 'Y':Y_train}
+        with open(os.path.join(self.config['path'], 'data', 'train_indoor.pkl'), 'wb') as fp:
+            pickle.dump(train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def extract_regions(self, img):
         # Extract Sub-images vectors
@@ -210,63 +220,3 @@ class Declarative():
 
         return region_vectors
 
-    def test_scene_indoor(self):
-        # Test on MIT Indoor 67
-        print('Testing Declarative Memory - Scenes Vectors - MIT Indoor 67')
-
-        acc = 0.0
-        acc2 = 0.0
-
-        path_test = os.path.join(self.config['path'], 'data', 'TestImages.txt')
-        length = len(open(path_test).readlines())
-
-        with open(path_test, 'r', encoding='ISO-8859-1') as archive:
-            for idx, line in enumerate(archive):
-                sys.stdout.write('Testing... ' + str(idx+1) + '/' + str(length) + '\r')
-
-                scene_class = Path(line).parts[0].strip() # Get name supervision from path
-
-                path = os.path.join(self.config['path'], 'data', 'MITImages', line.strip())
-
-                img = Image.open(path)
-                img = self.img_channels(img)
-
-                vec = self.img2vec.get_vec(img)
-
-                distance = np.inf
-                pred_class = ''
-
-                for class_name, class_vec in self.declarative_data['scene_vectors'].items():
-                    d = spatial.distance.cosine(vec, class_vec)
-
-                    if d < distance:
-                        pred_class = class_name
-                        distance = d
-
-                if pred_class == scene_class:
-                    acc += 1.0
-
-                region_vectors = self.extract_regions(img)
-
-                objects = []
-                for reg in region_vectors:
-                    objects.append(self.graph.get_obj(reg))
-
-                for co_occurrence in self.declarative_data['co_occurrences']:
-                    if all(elem in co_occurrence['co_occurrence'] for elem in objects):
-                        distance = np.inf
-                        pred_class = ''
-
-                        for class_name, class_vec in self.declarative_data['scene_vectors'].items():
-                            d = spatial.distance.cosine(co_occurrence['scene_vec'], class_vec)
-
-                            if d < distance:
-                                pred_class = class_name
-                                distance = d
-
-                        if pred_class == scene_class:
-                            acc2 += 1.0
-
-                        break
-
-        print('Accuracy on MIT Indoor 67: {} / {}'.format(acc/length, acc2/length))
