@@ -7,6 +7,7 @@ import os
 import sys
 import math
 import numpy as np
+import multiprocessing as mp
 from PIL import Image
 from scipy import spatial
 from fnmatch import fnmatch
@@ -77,7 +78,6 @@ class Graph():
 
                     objects = self.annotations[img_name]['annotation']['object']
                     for i, obj in enumerate(objects):
-                        stop = False
                         try:
                             x1 = int(obj['bndbox']['xmin'])
                             x2 = int(obj['bndbox']['xmax'])
@@ -155,22 +155,10 @@ class Graph():
                 continue
 
             try:
-                if self.config['dataset'] == 'indoor':
-                    x = []
-                    y = []
-                    for p in obj['polygon']['pt']:
-                        x.append(int(p['x']))
-                        y.append(int(p['y']))
-
-                    x1 = min(x)
-                    x2 = max(x)
-                    y1 = min(y)
-                    y2 = max(y)
-                elif self.config['dataset'] == 'sun2012':
-                    x1 = int(obj['bndbox']['xmin'])
-                    x2 = int(obj['bndbox']['xmax'])
-                    y1 = int(obj['bndbox']['ymin'])
-                    y2 = int(obj['bndbox']['ymax'])
+                x1 = int(obj['bndbox']['xmin'])
+                x2 = int(obj['bndbox']['xmax'])
+                y1 = int(obj['bndbox']['ymin'])
+                y2 = int(obj['bndbox']['ymax'])
             except TypeError:
                 return {},{}
 
@@ -196,7 +184,7 @@ class Graph():
 
         return angles, neighbours
 
-    def get_obj(self, vec):
+    def get_obj(self, vec, output):
         # Get the nearest vector on graph
         distance = np.inf
         obj = ''
@@ -210,7 +198,7 @@ class Graph():
                 distance = d
                 obj = k
 
-        return obj
+        output.put(obj)
 
     def get_subgraph(self, obj):
         # Extract node neighbours
@@ -220,3 +208,37 @@ class Graph():
             neighbours.append(ngb)
 
         return neighbours
+    
+    def region_vec(self, box, img, output):
+        # Region to vec
+        region = img.crop(box)
+        vec = self.img2vec.get_vec(region)
+
+        output.put(vec)
+
+    def extract_regions(self, img):
+        # Extract Sub-images vectors
+        width, height = img.size
+
+        processes_ext = []
+        output_ext = mp.Queue()
+
+        box = (0, 0, int(width/2), int(height/2)) # 1st region
+        processes_ext.append(mp.Process(target=self.region_vec, args=(box, img, output_ext)))
+
+        box = (int(width/2), 0, int(width), int(height/2)) # 2nd region
+        processes_ext.append(mp.Process(target=self.region_vec, args=(box, img, output_ext)))
+
+        box = (0, int(height/2), int(width/2), int(height)) # 3rd region
+        processes_ext.append(mp.Process(target=self.region_vec, args=(box, img, output_ext)))
+
+        box = (int(width/2), int(height/2), int(width), int(height)) # 4th region
+        processes_ext.append(mp.Process(target=self.region_vec, args=(box, img, output_ext)))
+
+        for p in processes_ext:
+            p.start()
+        for p in processes_ext:
+            p.join()
+
+        region_vectors = [output_ext.get() for p in processes_ext]
+        return region_vectors

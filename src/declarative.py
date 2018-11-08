@@ -11,10 +11,7 @@ from pathlib import Path
 from fnmatch import fnmatch
 
 class Declarative():
-    def __init__(self, graph):
-
-        self.graph = graph
-
+    def __init__(self):
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
@@ -29,7 +26,6 @@ class Declarative():
             from src.img_to_vec import Img2Vec
 
         self.img2vec = Img2Vec(model = self.config['arch_scene'])
-        self.reg2vec = Img2Vec(model = self.config['arch_obj'])
 
         self.declarative_path = os.path.join(self.config['path'], 'data', 'declarative_data.json')
         if os.path.exists(self.declarative_path):
@@ -193,30 +189,4 @@ class Declarative():
         with open(os.path.join(self.config['path'], 'data', 'train_indoor.pkl'), 'wb') as fp:
             pickle.dump(train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def extract_regions(self, img):
-        # Extract Sub-images vectors
-        region_vectors = []
-        width, height = img.size
-
-        box = (0, 0, int(width/2), int(height/2)) # 1st region
-        region = img.crop(box)
-        vec = self.reg2vec.get_vec(region)
-        region_vectors.append(vec)
-
-        box = (int(width/2), 0, int(width), int(height/2)) # 2nd region
-        region = img.crop(box)
-        vec = self.reg2vec.get_vec(region)
-        region_vectors.append(vec)
-
-        box = (0, int(height/2), int(width/2), int(height)) # 3rd region
-        region = img.crop(box)
-        vec = self.reg2vec.get_vec(region)
-        region_vectors.append(vec)
-
-        box = (int(width/2), int(height/2), int(width), int(height)) # 4th region
-        region = img.crop(box)
-        vec = self.reg2vec.get_vec(region)
-        region_vectors.append(vec)
-
-        return region_vectors
 
