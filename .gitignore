@@ -13,5 +13,6 @@ main_autogen/
 .idea*
 .remote-sync.json
 nohup.out
+settings.json
 
 !data/.gitkeep

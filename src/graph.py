@@ -13,7 +13,7 @@ from scipy import spatial
 from fnmatch import fnmatch
 
 class Graph():
-    def __init__(self, arch = 'resnet-18-ImageNet'):
+    def __init__(self):
 
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
@@ -25,6 +25,12 @@ class Graph():
         else:
             print('Annotations data not found!')
 
+        try:
+            from lib.img_to_vec import Img2Vec
+        except ImportError:
+            from src.img_to_vec import Img2Vec 
+        self.img2vec = Img2Vec(model = self.config['arch_obj'])
+
         self.graph_path = os.path.join(self.config['path'], 'data', 'sun2012_graph.json')
         if os.path.exists(self.graph_path):
             print('Loading graph')
@@ -33,13 +39,6 @@ class Graph():
         else:
             print('Graph data not found!')
             self.graph = {}
-
-            try:
-                from lib.img_to_vec import Img2Vec
-            except ImportError:
-                from src.img_to_vec import Img2Vec
-
-            self.img2vec = Img2Vec(model = arch)
 
             self.train_sun()
 

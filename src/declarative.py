@@ -24,7 +24,6 @@ class Declarative():
             from lib.img_to_vec import Img2Vec
         except ImportError:
             from src.img_to_vec import Img2Vec
-
         self.img2vec = Img2Vec(model = self.config['arch_scene'])
 
         self.declarative_path = os.path.join(self.config['path'], 'data', 'declarative_data.json')
@@ -70,7 +69,7 @@ class Declarative():
         root = os.path.join(self.config['path'], 'data', 'SUN2012pascalformat', 'JPEGImages')
 
         img = None
-        for path, subdirs, files in os.walk(root):
+        for path, _, files in os.walk(root):
             for name in files:
                 if fnmatch(name, pattern):
                     img = Image.open(os.path.join(path, name))
@@ -119,7 +118,7 @@ class Declarative():
 
         root = os.path.join(self.config['path'], 'data', 'SUN397')
 
-        for path, subdirs, files in os.walk(root):
+        for path, _, files in os.walk(root):
             length = len(files)
 
             for idx, name in enumerate(files):
