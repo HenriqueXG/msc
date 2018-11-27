@@ -15,7 +15,7 @@ with open('config.json', 'r') as fp:
 sys.path.append(os.path.join(config['path'], 'src'))
 from img_to_vec import Img2Vec
 
-input_path = os.path.join(config['path'], 'test', 'test_images')
+input_path = os.path.join(config['path'], 'debug', 'test_images')
 
 arch = 'resnet-18-ImageNet'
 img2vec = Img2Vec(model = arch)
