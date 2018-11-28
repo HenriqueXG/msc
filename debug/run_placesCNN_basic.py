@@ -52,7 +52,7 @@ with open(file_name) as class_file:
 classes = tuple(classes)
 
 # load the test image
-img_name = os.path.join(config['path'], 'test', 'test_images', '12.jpg')
+img_name = os.path.join(config['path'], 'debug', 'test_images', 'montain.jpg')
 if not os.access(img_name, os.W_OK):
     img_url = 'http://places.csail.mit.edu/demo/' + img_name
     os.system('wget ' + img_url)

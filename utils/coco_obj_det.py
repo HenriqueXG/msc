@@ -12,29 +12,17 @@ with open('config.json', 'r') as fp:
     config = json.load(fp)
 
 input_path = os.path.join(config['path'], 'debug', 'test_images')
-pic_name = 'patio.jpg'
+pic_name = 'catdog.jpg'
 
-ctx = mx.cpu(0)
+# you can change it to your image filename
+filename = os.path.join(input_path, pic_name)
 
-img = image.imread(os.path.join(input_path, pic_name))
+net = model_zoo.get_model('faster_rcnn_resnet101_v1d_coco', pretrained=True)
 
-transform_fn = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize([.485, .456, .406], [.229, .224, .225])
-])
-img = transform_fn(img)
-img = img.expand_dims(0).as_in_context(ctx)
+im_fname = utils.download('', path=filename)
+x, orig_img = data.transforms.presets.rcnn.load_test(im_fname)
 
-#model = gluoncv.model_zoo.get_model('deeplab_resnet101_ade', pretrained=True)
-model = gluoncv.model_zoo.get_model('fcn_resnet101_voc', pretrained=True)
-#model = gluoncv.model_zoo.get_model('psp_resnet101_ade', pretrained=True)
+box_ids, scores, bboxes = net(x)
+ax = utils.viz.plot_bbox(orig_img, bboxes[0], scores[0], box_ids[0], class_names=net.classes)
 
-output = model.demo(img)
-predict = mx.nd.squeeze(mx.nd.argmax(output, 1)).asnumpy()
-
-from gluoncv.utils.viz import get_color_pallete
-import matplotlib.image as mpimg
-mask = get_color_pallete(predict, 'ade20k')
-
-plt.imshow(mask)
 plt.show()

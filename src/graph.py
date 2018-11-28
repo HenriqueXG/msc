@@ -14,7 +14,6 @@ from fnmatch import fnmatch
 
 class Graph():
     def __init__(self):
-
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
