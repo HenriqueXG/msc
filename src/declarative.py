@@ -28,7 +28,7 @@ class Declarative():
 
         self.declarative_path = os.path.join(self.config['path'], 'data', 'declarative_data.json')
         if os.path.exists(self.declarative_path):
-            print('Loading declarative data')
+            print('Loading declarative data...')
             with open(self.declarative_path, 'r') as fp:
                 self.declarative_data = json.load(fp)
 

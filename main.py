@@ -13,6 +13,7 @@ from pathlib import Path
 from scipy import spatial
 from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
+from gluoncv import data, utils
 
 config = {}
 with open('config.json', 'r') as fp:
@@ -26,27 +27,6 @@ try:
 except ImportError:
     from src.graph import Graph
     from src.declarative import Declarative
-
-def sim_classes(declarative, vectors):
-    # Find eligible classes given a set of vectors
-    eligible_classes = []
-
-    for vec in vectors:
-        distance = np.inf
-        pred_class = ''
-
-        for class_name, class_vec in declarative.declarative_data['scene_vectors'].items():
-            d = spatial.distance.cosine(vec, class_vec)
-
-            if d < distance:
-                pred_class = class_name
-                distance = d
-        
-        eligible_classes.append(pred_class)
-    eligible_classes = [*set(eligible_classes)]
-
-
-    return eligible_classes
 
 def open_indoor_test(declarative):
     # Open tess MIT Indoor 67 files
@@ -107,239 +87,105 @@ def open_indoor_test(declarative):
 
     return train_data, test_data, length
 
-def test_indoor_svm(svm, train_data, test_data, output):
+def test_indoor_svm(svm, train_data, test_data):
     # SVM test on MIT Indoor 67
     print('Testing SVM...')
 
     pred = {}
-    pred['model'] = 'svm'
+    svm_param = {}
+
+    svm_param['model'] = 'svm'
 
     for idx in range(len(test_data['X'])):
         pred_ = svm.predict_proba([test_data['X'][idx]])[0]
         pred[idx] = pred_
-    pred['classes'] = svm.classes_
+    svm_param['classes'] = svm.classes_
 
     acc = svm.score(test_data['X'], test_data['Y'])
-    pred['acc'] = acc
+    svm_param['acc'] = acc
 
-    output.put(pred)
+    return pred, svm_param
 
-def test_indoor_graph(declarative, test_data, length):
+def test_indoor_graph(pam, train_data, test_data):
     # Graph test on MIT Indoor 67
     print('Testing graph...')
 
-    path_test = os.path.join(declarative.config['path'], 'data', 'TestImages.txt')
-    path_graph_indoor_dist = os.path.join(config['path'], 'data', 'graph_indoor_dist.pkl')
+    path_test = os.path.join(config['path'], 'data', 'TestImages.txt')
+    test_indoor_path_graph = os.path.join(config['path'], 'data', 'test_indoor_graph.pkl')
 
-    corr = 0.0
-    pred = {}
-    pred['model'] = 'graph'
-    pred['distances'] = []
+    if not os.path.exists(test_indoor_path_graph):        
+        length = len(open(path_test).readlines())
+        with open(path_test, 'r', encoding='ISO-8859-1') as archive:
+            for idx, line in enumerate(archive):
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-    with open(path_graph_indoor_dist, 'rb') as fp:
-        pred['distances'] = pickle.load(fp)
+                    scene_class = Path(line).parts[0].strip() # Get class supervision from path
 
-    with open(path_test, 'r', encoding='ISO-8859-1') as archive:
-        for idx, _ in enumerate(archive):
-            scene_class = test_data['Y'][idx]
+                    path = os.path.join(config['path'], 'data', 'MITImages', line.strip())
 
-            distance = np.inf
-            pred_class = ''
-            for ds in pred['distances'][idx]:
-                d = ds['d']
-                class_name = ds['class_name']
+                    im_fname = utils.download('', path = path)
+                    x, orig_img = data.transforms.presets.rcnn.load_test(im_fname)
 
-                if d < distance:
-                    pred_class = class_name
-                    distance = d
+                    box_ids, sscores, bboxes = pam.net(x)
 
-            if pred_class == scene_class:
-                corr += 1.0
-    
-    pred['acc'] = corr/length
+                    boxes = []
+                    scores = []
+                    ids = []
+                    for i in range(len(sscores[0])):
+                        if sscores[0][i][0] > float(config['pam_threshold']): # Choose only detections that have confident higher than a threshold
+                            boxes.append(bboxes.asnumpy()[0][i])
+                            scores.append(float(sscores.asnumpy()[0][i][0]))
+                            ids.append(int(box_ids.asnumpy()[0][i][0]))
 
-    return pred
+                    ids = [*set(ids)]
+                    ids_bool = [0] * len(pam.coco_classes)
 
-def test_indoor_graph_create(declarative, graph, test_data, length):
-    # Graph test on MIT Indoor 67 and create pre-test data
-    path_test = os.path.join(declarative.config['path'], 'data', 'TestImages.txt')
-    path_graph_indoor_dist = os.path.join(config['path'], 'data', 'graph_indoor_dist.pkl')
+                    for i in ids:
+                        ids_bool[i] = 1
 
-    corr = 0.0
-    pred = {}
-    pred['model'] = 'graph'
-    pred['distances'] = []
-
-    with open(path_test, 'r', encoding='ISO-8859-1') as archive:
-        for idx, line in enumerate(archive):            
-            sys.stdout.write('Testing graph... ' + str(idx+1) + '/' + str(length) + '\r')
-            
-            scene_class = test_data['Y'][idx]
-
-            path = os.path.join(config['path'], 'data', 'MITImages', line.strip())
-            img = Image.open(path)
-            img = declarative.img_channels(img)
-
-            region_vectors = graph.extract_regions(img)
-                        
-            processes_reg = []
-            output_reg = mp.Queue()
-            for reg in region_vectors:
-                processes_reg.append(mp.Process(target=graph.get_obj, args=(reg, output_reg)))
-            for p in processes_reg:
-                p.start()
-            for p in processes_reg:
-                p.join()
-            objects = [*set([output_reg.get() for p in processes_reg])]
-
-            neighbours = []
-            for obj in objects:
-                neighbours += graph.get_subgraph(obj)
-            neighbours = [*set(neighbours)]
-
-            distances = []
-            for co_occurrence in declarative.declarative_data['co_occurrences']:
-                if all(elem in neighbours for elem in co_occurrence['co_occurrence']):
-                    distance = np.inf
-                    pred_class = ''
-
-                    for class_name, class_vec in declarative.declarative_data['scene_vectors'].items():
-                        d = spatial.distance.cosine(co_occurrence['scene_vec'], class_vec)
-
-                        if d < distance:
-                            pred_class = class_name
-                            distance = d
+                    test_data['X'][idx] += ids_bool
                     
-                    distances.append({'d':distance, 'class_name':pred_class})
+                except:
+                    print('Error at {}'.format(line))
+                    return
 
-            pred['distances'].append(distances)
-
-            distance = np.inf
-            pred_class = ''
-            for ds in pred['distances'][idx]:
-                d = ds['d']
-                class_name = ds['class_name']
-
-                if d < distance:
-                    pred_class = class_name
-                    distance = d
-
-            if pred_class == scene_class:
-                corr += 1.0
-
-    pred['acc'] = corr/length
-
-    with open(path_graph_indoor_dist, 'wb') as fp:
-        pickle.dump(pred['distances'], fp, protocol=pickle.HIGHEST_PROTOCOL)
-
-    return pred
-
-def test_indoor_cosine(declarative, test_data, length, output):
-    # Cosine test on MIT Indoor 67
-    print('Testing cosine...')
-
-    path_test = os.path.join(declarative.config['path'], 'data', 'TestImages.txt')
-
-    corr = 0.0
-    pred = {}
-    pred['model'] = 'cosine'
-
-    classes_ = [class_name for class_name, _ in declarative.declarative_data['scene_vectors'].items()]
-    pred['classes'] = classes_
-
-    with open(path_test, 'r', encoding='ISO-8859-1') as archive:
-        for idx, _ in enumerate(archive):
-            vec = np.array(test_data['X'][idx])
-            scene_class = test_data['Y'][idx]
-
-            distance = np.inf
-            pred_class = ''
-
-            pred_ = []
-
-            for class_name, class_vec in declarative.declarative_data['scene_vectors'].items():
-                d = spatial.distance.cosine(vec, class_vec)
-
-                pred_.append(1.0 - d)
-
-                if d < distance:
-                    pred_class = class_name
-                    distance = d
-
-            if pred_class == scene_class:
-                corr += 1.0
-
-            pred[idx] = pred_
+        print(len(test_data['X'][0]))
+        with open(test_indoor_path_graph, 'wb') as fp:
+            pickle.dump(test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
-    pred['acc'] = corr/length
-        
-    output.put(pred)
+    else:
+        with open(test_indoor_path_graph, 'rb') as fp:
+            test_data = pickle.load(fp)
 
-def test_indoor(svm, declarative, train_data, test_data, alphas):
+    return test_data
+
+def test_indoor(svm, declarative, train_data, test_data, graph_r, length):
     # Testing - Scenes Vectors - MIT Indoor 67
     acc = []
 
-    # path_graph_indoor_eligible = os.path.join(config['path'], 'data', 'graph_indoor_eligible.pkl')
-    # if os.path.exists(path_graph_indoor_eligible):
-    #     gph_r = test_indoor_graph(declarative, test_data, length)
-    # else:
-    #     graph = Graph()
-    #     gph_r = test_indoor_graph_create(declarative, graph, test_data, length)
+    svm_r, svm_param = test_indoor_svm(svm, train_data, test_data)
 
-    for alpha in alphas:
-        output = mp.Queue()
+    for idx in range(len(test_data['X'])):
+        v1 = svm_r[idx]
+        svm_r[idx] = [(x-min(v1))/(max(v1)-min(v1)) for x in v1] # MinMax Normalization
+    print(svm_param['acc'])
+    corr = 0.0
+    for idx, pred_ in svm_r.items():
+        max_i = 0
+        max_v = 0
+        for i in range(len(pred_)):
+            weight = graph_r['pred_weights'][idx][svm_param['classes'][i]]
+            if pred_[i] > max_v and weight != 0.0:
+                max_v = pred_[i]
+                max_i = i
+        pred_class = svm_param['classes'][max_i]
+        scene_class = test_data['Y'][idx]
 
-        processes = []
-        processes.append(mp.Process(target=test_indoor_cosine, args=(declarative, test_data, length, output)))
-        processes.append(mp.Process(target=test_indoor_svm, args=(svm, train_data, test_data, output)))
+        if pred_class == scene_class:
+            corr += 1.0
 
-        for p in processes:
-            p.start()
-
-        results = [output.get() for p in processes]
-
-        for p in processes:
-            p.join()
-
-        for r in results:
-            if r['model'] == 'svm':
-                svm_r = r
-            elif r['model'] == 'cosine':
-                cos_r = r
-        
-        pred = []
-
-        for idx in range(len(test_data['X'])):
-            v1 = svm_r[idx]
-            v2 = cos_r[idx]
-
-            # MinMax Normalization
-            v1 = [(x-min(v1))/(max(v1)-min(v1)) for x in v1]
-            v2 = [(x-min(v2))/(max(v2)-min(v2)) for x in v2]
-
-            pred_ = [v1[i]*alpha + v2[i]*(1.0 - alpha) for i in range(len(v1))]
-            pred.append(pred_)
-
-        corr = 0.0
-        for idx, pred_ in enumerate(pred):
-            max_i = 0
-            max_v = 0
-            for i in range(len(pred_)):
-                if pred_[i] > max_v:
-                    max_v = pred_[i]
-                    max_i = i
-            pred_class = svm_r['classes'][max_i]
-            scene_class = test_data['Y'][idx]
-
-            if pred_class == scene_class:
-                corr += 1.0
-
-        acc.append((alpha, corr/length))
-    
-    acc = sorted(acc, key=lambda t: t[0])
-    x, y = map(list,zip(*acc))
-
-    return x, y
+    return corr/length
 
 if __name__ == '__main__':
     declarative = Declarative()
@@ -348,7 +194,9 @@ if __name__ == '__main__':
     
     svm = SVC(kernel='rbf', probability=True).fit(train_data['X'], train_data['Y'])
 
-    x, y = test_indoor(svm, declarative, train_data, test_data, [0.0])
+    pam = Graph()
+    graph_r = test_indoor_graph(pam)
 
-    print(y)
+    r = test_indoor(svm, declarative, train_data, test_data, graph_r, length)
 
+    print(r)

@@ -41,8 +41,3 @@ if 'build_ext' in sys.argv:
 else:
     print ('Compiling in sequential...')
     setup_extensions_in_sequential()
-
-with open('config.json', 'r') as fp:
-    self.config = json.load(fp)
-
-os.system('python3 ' + os.path.join(config['path'], 'utils', 'sun_obj_annotations.py'))
