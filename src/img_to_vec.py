@@ -17,8 +17,6 @@ class Img2Vec():
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
-        self.layer_output_size_pool = 1
-
         self.device = torch.device("cuda" if cuda else "cpu")
         self.model, self.extraction_layer = self._get_model_and_layer(model, layer)
 
@@ -65,7 +63,6 @@ class Img2Vec():
             if layer == 'default':
                 layer = model._modules.get('avgpool')
                 self.layer_output_size_pool = 512
-                self.layer_output_size = 1
             else:
                 layer = model._modules.get(layer)
 

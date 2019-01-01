@@ -15,11 +15,6 @@ class Declarative():
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
-        self.ann_path = os.path.join(self.config['path'], 'data', 'sun2012_ann.json')
-        if os.path.exists(self.ann_path):
-            with open(self.ann_path, 'r') as fp:
-                self.annotations = json.load(fp)
-
         try:
             from lib.img_to_vec import Img2Vec
         except ImportError:
@@ -27,30 +22,30 @@ class Declarative():
         self.img2vec = Img2Vec(model = self.config['arch_scene'])
 
         self.declarative_path = os.path.join(self.config['path'], 'data', 'declarative_data.json')
-        if os.path.exists(self.declarative_path):
+        self.train_indoor_path = os.path.join(self.config['path'], 'data', 'train_indoor_declarative.pkl')
+        if (os.path.exists(self.declarative_path) or os.path.exists(self.train_indoor_path)) and self.config['dataset'] == 'indoor':
+            print('Loading declarative data (train)...')
+            with open(self.declarative_path, 'r') as fp:
+                self.declarative_data = json.load(fp)
+            with open(self.train_indoor_path, 'rb') as fp:
+                self.train_data = pickle.load(fp)
+        elif self.config['dataset'] == 'indoor':
+            self.train_scene_indoor()
+
+        self.test_indoor_path = os.path.join(self.config['path'], 'data', 'test_indoor_declarative.pkl')
+        if os.path.exists(self.test_indoor_path) and self.config['dataset'] == 'indoor':
+            print('Loading declarative data (test)...')
+            with open(self.test_indoor_path, 'rb') as fp:
+                self.test_data = pickle.load(fp)
+        elif self.config['dataset'] == 'indoor':
+            self.test_scene_indoor()
+
+        if os.path.exists(self.declarative_path) and self.config['dataset'] == 'sun397':
             print('Loading declarative data...')
             with open(self.declarative_path, 'r') as fp:
                 self.declarative_data = json.load(fp)
-
-            if not self.declarative_data.get('co_occurrences'):
-                self.train_obj()
-            if not self.declarative_data.get('scene_vectors'):
-                self.declarative_data['scene_vectors'] = {}
-                if self.config['dataset'] == 'indoor':
-                    self.train_scene_indoor()
-                elif self.config['dataset'] == 'sun397':
-                    self.train_scene_sun397()
-        else:
-            print('Declarative data not found!')
-            self.declarative_data = {}
-
-            self.train_obj()
-
-            self.declarative_data['scene_vectors'] = {}
-            if self.config['dataset'] == 'indoor':
-                self.train_scene_indoor()
-            elif self.config['dataset'] == 'sun397':
-                self.train_scene_sun397()
+        elif self.config['dataset'] == 'sun397':
+            self.train_scene_sun397()
 
     def img_channels(self, img):
         # Reshape for 3-channels
@@ -64,53 +59,6 @@ class Declarative():
             img = Image.fromarray(np.uint8(img))
 
         return img
-
-    def find_img_sun(self, pattern):
-        root = os.path.join(self.config['path'], 'data', 'SUN2012pascalformat', 'JPEGImages')
-
-        img = None
-        for path, _, files in os.walk(root):
-            for name in files:
-                if fnmatch(name, pattern):
-                    img = Image.open(os.path.join(path, name))
-                    return img
-
-    def train_obj(self):
-        # Train object co-occurences
-        print('Training Declarative Memory - Objects')
-
-        co_occurrences = []
-
-        length = len(self.annotations.items())
-
-        for idx, (k, v) in enumerate(self.annotations.items()):
-            sys.stdout.write(k + ' -- ' + str(idx+1) + '/' + str(length) + '\r')
-
-            objects = v['annotation']['object']
-
-            co_occurrence = []
-
-            for obj in objects:
-                try:
-                    co_occurrence.append(obj['name'])
-                except TypeError:
-                    co_occurrence.append(objects['name'])
-                    break
-
-            co_occurrence = {'co_occurrence':[*set(co_occurrence)]}
-
-            pattern = v['annotation']['filename']
-            img = self.find_img_sun(pattern)
-            img = self.img_channels(img)
-
-            vec = self.img2vec.get_vec(img)
-            co_occurrence['scene_vec'] = vec.tolist()
-
-            co_occurrences.append(co_occurrence)
-
-        self.declarative_data['co_occurrences'] = co_occurrences
-        with open(os.path.join(self.config['path'], 'data', 'declarative_data.json'), 'w') as fp:
-            json.dump(self.declarative_data, fp, sort_keys=True, indent=4)
 
     def train_scene_sun397(self):
         # Train SUN397 scene vectors
@@ -150,6 +98,7 @@ class Declarative():
         print('Training Declarative Memory - Scenes - MIT Indoor 67')
 
         path_train = os.path.join(self.config['path'], 'data', 'TrainImages.txt')
+        
         length = len(open(path_train).readlines())
 
         X_train = []
@@ -181,11 +130,43 @@ class Declarative():
                     print('Error at {}'.format(line))
                     break
 
-        with open(os.path.join(self.config['path'], 'data', 'declarative_data.json'), 'w') as fp:
+        with open(self.declarative_path, 'w') as fp:
             json.dump(self.declarative_data, fp, sort_keys=True, indent=4)
 
-        train_data = {'X':X_train, 'Y':Y_train}
-        with open(os.path.join(self.config['path'], 'data', 'train_indoor.pkl'), 'wb') as fp:
-            pickle.dump(train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        self.train_data = {'X':X_train, 'Y':Y_train}
+        with open(self.train_indoor_path, 'wb') as fp:
+            pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def test_scene_indoor(self):
+        # Test MIT Indoor 67 scene vectors
+        print('Testing Declarative Memory - Scenes - MIT Indoor 67')
 
+        path_test = os.path.join(self.config['path'], 'data', 'TestImages.txt')
+        length = len(open(path_test).readlines())
+
+        X_test = []
+        Y_test = []
+
+        with open(path_test, 'r', encoding='ISO-8859-1') as archive:
+            for idx, line in enumerate(archive):
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
+
+                    scene_class = Path(line).parts[0].strip() # Get name supervision from path
+
+                    path = os.path.join(self.config['path'], 'data', 'MITImages', line.strip())
+
+                    img = Image.open(path)
+                    img = self.img_channels(img)
+
+                    vec = self.img2vec.get_vec(img)
+
+                    X_test.append(vec)
+                    Y_test.append(scene_class)
+                except:
+                    print('Error at {}'.format(line))
+                    break
+
+        self.test_data = {'X':X_test, 'Y':Y_test}
+        with open(self.test_indoor_path, 'wb') as fp:
+            pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)

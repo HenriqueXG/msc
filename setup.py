@@ -13,7 +13,7 @@ from Cython.Distutils import build_ext
 NB_COMPILE_JOBS = multiprocessing.cpu_count()
 
 ext_modules = [
-    Extension('graph', ['src/graph.py']),
+    Extension('pam', ['src/pam.py']),
     Extension('img_to_vec', ['src/img_to_vec.py']),
     Extension('declarative', ['src/declarative.py'])
 ]
