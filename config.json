@@ -1,8 +1,8 @@
 {
     "path":"/home/henrique/msc",
     "arch_pam":"yolo3_darknet53_coco",
-    "arch_scene":"resnet-18-Places",
+    "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
     "dataset":"indoor",
-    "pam_threshold":0.0
+    "pam_threshold":0.5
 }

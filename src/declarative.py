@@ -30,7 +30,7 @@ class Declarative():
             with open(self.train_indoor_path, 'rb') as fp:
                 self.train_data = pickle.load(fp)
         elif self.config['dataset'] == 'indoor':
-            self.train_scene_indoor()
+            self.train_indoor()
 
         self.test_indoor_path = os.path.join(self.config['path'], 'data', 'test_indoor_declarative.pkl')
         if os.path.exists(self.test_indoor_path) and self.config['dataset'] == 'indoor':
@@ -38,14 +38,14 @@ class Declarative():
             with open(self.test_indoor_path, 'rb') as fp:
                 self.test_data = pickle.load(fp)
         elif self.config['dataset'] == 'indoor':
-            self.test_scene_indoor()
+            self.test_indoor()
 
         if os.path.exists(self.declarative_path) and self.config['dataset'] == 'sun397':
             print('Loading declarative data...')
             with open(self.declarative_path, 'r') as fp:
                 self.declarative_data = json.load(fp)
         elif self.config['dataset'] == 'sun397':
-            self.train_scene_sun397()
+            self.train_sun397()
 
     def img_channels(self, img):
         # Reshape for 3-channels
@@ -60,7 +60,7 @@ class Declarative():
 
         return img
 
-    def train_scene_sun397(self):
+    def train_sun397(self):
         # Train SUN397 scene vectors
         print('Training Declarative Memory - Scenes - SUN 397')
 
@@ -93,9 +93,9 @@ class Declarative():
         with open(os.path.join(self.config['path'], 'data', 'declarative_data.json'), 'w') as fp:
             json.dump(self.declarative_data, fp, sort_keys=True, indent=4)
 
-    def train_scene_indoor(self):
-        # Train MIT Indoor 67 scene vectors
-        print('Training Declarative Memory - Scenes - MIT Indoor 67')
+    def train_indoor(self):
+        # Train Declarative Memory on MIT Indoor 67 scene vectors
+        print('Training Declarative Memory - MIT Indoor 67')
 
         path_train = os.path.join(self.config['path'], 'data', 'TrainImages.txt')
         
@@ -137,9 +137,9 @@ class Declarative():
         with open(self.train_indoor_path, 'wb') as fp:
             pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def test_scene_indoor(self):
-        # Test MIT Indoor 67 scene vectors
-        print('Testing Declarative Memory - Scenes - MIT Indoor 67')
+    def test_indoor(self):
+        # Test Declarative Memory on MIT Indoor 67 scene vectors
+        print('Testing Declarative Memory - MIT Indoor 67')
 
         path_test = os.path.join(self.config['path'], 'data', 'TestImages.txt')
         length = len(open(path_test).readlines())

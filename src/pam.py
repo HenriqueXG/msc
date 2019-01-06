@@ -1,4 +1,4 @@
-# PAM and Spatial Memory
+# PAM
 ## Henrique X. Goulart
 
 import json
@@ -58,7 +58,7 @@ class PAM():
         return img
 
     def train_indoor(self, td):
-        # Create PAM of MIT Indoor 67
+        # Train PAM of MIT Indoor 67
         print('Training PAM - MIT Indoor 67')
 
         self.train_data = td.copy()
@@ -130,8 +130,8 @@ class PAM():
             pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_indoor(self, td):
-        # PAM test on MIT Indoor 67
-        print('Testing PAM...')
+        # Test PAM on MIT Indoor 67
+        print('Testing PAM - MIT Indoor 67')
 
         self.test_data = td.copy()
 

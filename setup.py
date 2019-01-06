@@ -15,7 +15,8 @@ NB_COMPILE_JOBS = multiprocessing.cpu_count()
 ext_modules = [
     Extension('pam', ['src/pam.py']),
     Extension('img_to_vec', ['src/img_to_vec.py']),
-    Extension('declarative', ['src/declarative.py'])
+    Extension('declarative', ['src/declarative.py']),
+    Extension('spatial', ['src/spatial.py'])
 ]
 
 def setup_given_extensions(extensions):
