@@ -21,12 +21,9 @@ class Declarative():
             from src.img_to_vec import Img2Vec
         self.img2vec = Img2Vec(model = self.config['arch_scene'])
 
-        self.declarative_path = os.path.join(self.config['path'], 'data', 'declarative_data.json')
         self.train_indoor_path = os.path.join(self.config['path'], 'data', 'train_indoor_declarative.pkl')
-        if (os.path.exists(self.declarative_path) or os.path.exists(self.train_indoor_path)) and self.config['dataset'] == 'indoor':
+        if os.path.exists(self.train_indoor_path) and self.config['dataset'] == 'indoor':
             print('Loading declarative data (train)...')
-            with open(self.declarative_path, 'r') as fp:
-                self.declarative_data = json.load(fp)
             with open(self.train_indoor_path, 'rb') as fp:
                 self.train_data = pickle.load(fp)
         elif self.config['dataset'] == 'indoor':
@@ -40,12 +37,7 @@ class Declarative():
         elif self.config['dataset'] == 'indoor':
             self.test_indoor()
 
-        if os.path.exists(self.declarative_path) and self.config['dataset'] == 'sun397':
-            print('Loading declarative data...')
-            with open(self.declarative_path, 'r') as fp:
-                self.declarative_data = json.load(fp)
-        elif self.config['dataset'] == 'sun397':
-            self.train_sun397()
+        # self.train_sun397()
 
     def img_channels(self, img):
         # Reshape for 3-channels
@@ -120,18 +112,9 @@ class Declarative():
 
                     X_train.append(vec)
                     Y_train.append(scene_class)
-
-                    scene_vec = self.declarative_data['scene_vectors'].get(scene_class)
-                    if scene_vec:
-                        self.declarative_data['scene_vectors'][scene_class] = (np.array(scene_vec) + vec).tolist()
-                    else:
-                        self.declarative_data['scene_vectors'][scene_class] = vec.tolist()
                 except:
                     print('Error at {}'.format(line))
                     break
-
-        with open(self.declarative_path, 'w') as fp:
-            json.dump(self.declarative_data, fp, sort_keys=True, indent=4)
 
         self.train_data = {'X':X_train, 'Y':Y_train}
         with open(self.train_indoor_path, 'wb') as fp:

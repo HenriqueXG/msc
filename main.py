@@ -44,14 +44,31 @@ def test_indoor_model(svm, nn, train_data, test_data):
         pred_nn[idx] = nn.predict_proba([test_data['X'][idx]])[0]
 
     param['classes'] = svm.classes_
-    param['svm_scr'] = svm.score(test_data['X'], test_data['Y'])
     param['nn_scr'] = nn.score(test_data['X'], test_data['Y'])
+
+    corr = 0.0
+    for idx in range(len(test_data['X'])):
+        max_i = 0
+        max_v = 0
+        pred_ = pred_svm[idx]
+
+        for i in range(len(pred_)):
+            if pred_[i] > max_v:
+                max_v = pred_[i]
+                max_i = i
+        pred_class = param['classes'][max_i]
+        scene_class = test_data['Y'][idx]
+
+        if pred_class == scene_class:
+            corr += 1.0
+    param['svm_scr'] = corr/len(test_data['X'])
 
     return pred_svm, pred_nn, param
 
-def test_indoor(svm, nn, declarative, train_data, test_data):
+def test_indoor(svm, nn, train_data, test_data):
     # Testing - MIT Indoor 67
     pred_svm, pred_nn, param = test_indoor_model(svm, nn, train_data, test_data)
+    # return param['svm_scr']
 
     r = []
     for alpha in np.linspace(0.0, 1.0, 10):
@@ -83,32 +100,33 @@ def test_indoor(svm, nn, declarative, train_data, test_data):
                 corr += 1.0
 
         r.append([alpha, corr/len(test_data['Y'])])
-    return np.array(r), param['svm_scr'], param['nn_scr']
+    return np.array(r)
 
 if __name__ == '__main__':
-    declarative = Declarative()
-    pam = PAM(declarative.train_data, declarative.test_data)
-    spatial = Spatial(pam.train_data, pam.test_data)
+    if os.path.exists(os.path.join(config['path'], 'data', 'test_indoor_spatial.pkl')) and os.path.exists(os.path.join(config['path'], 'data', 'train_indoor_spatial.pkl')):
+        # If Spatial Memory is preprocessed, it has all information preprocessed by the other memories. Thus, the others ones don't have to be loaded. 
+        spatial = Spatial(None, None)
+    else:
+        declarative = Declarative()
+        pam = PAM(declarative.train_data, declarative.test_data)
+        spatial = Spatial(pam.train_data, pam.test_data)
 
     print('Vector dimension: {}'.format(len(spatial.train_data['X'][0])))
 
-    print('Fitting...')
-    svm = SVC(kernel='rbf', probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
-    nn = MLPClassifier(hidden_layer_sizes=(1000, )).fit(spatial.train_data['X'], spatial.train_data['Y'])
+    results = []
+    for i in range(1):
+        print('Fitting...')
+        svm = SVC(kernel='rbf', probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
+        # nn = None
+        nn = MLPClassifier(hidden_layer_sizes=(1000,), activation='logistic').fit(spatial.train_data['X'], spatial.train_data['Y'])
 
-    r, svm_scr, nn_scr = test_indoor(svm, nn, declarative, spatial.train_data, spatial.test_data)
+        r = test_indoor(svm, nn, spatial.train_data, spatial.test_data)
+        results.append(r)
+        # path_r = os.path.join(config['path'], 'media', 'svmsigmoid.txt')
+        # with open(path_r, 'a') as fp:
+        #     fp.write(str(r) + '\n') 
+        
+    path_r = os.path.join(config['path'], 'media', 'rbf_1000_sigmoid.pkl')
+    with open(path_r, 'wb') as fp:
+        pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL) 
 
-    # X = np.array(r[:,0]).reshape((10,10))
-    # Y = np.array(r[:,1]).reshape((10,10))
-    # Z = np.array(r[:,2]).reshape((10,10))
-
-    # plt.contourf(X,Y,Z)
-    # plt.colorbar()
-
-    plt.plot(r[:,0], r[:,1])
-
-    plt.show()
-    
-    path_r = os.path.join(config['path'], 'media', 'rbf_1000.txt')
-    with open(path_r, 'a') as fp:
-        fp.write(str(svm_scr) + ',' + str(nn_scr))    
