@@ -35,7 +35,7 @@ input_path = os.path.join(config['path'], 'debug', 'test_images')
 pic_name = 'highway.jpg'
 # you can change it to your image filename
 filename = os.path.join(input_path, pic_name)
-filename = os.path.join(config['path'], 'data', 'MITImages', 'corridor/londres_023.jpg')
+filename = os.path.join(config['path'], 'debug', 'test_images', 'highway.jpg')
 
 net = model_zoo.get_model('yolo3_darknet53_coco', pretrained=True)
 
@@ -69,7 +69,16 @@ for b in boxes:
     color = np.random.rand(3)
     rect = patches.Rectangle((x1, y2), dx, dy, linewidth = 3, edgecolor = [0,0,1], facecolor = 'None')
     ax.add_patch(rect)
+    break
 ax.imshow(orig_img)
 ax.axis('off')
+
+fig, ax = plt.subplots()
+box = (x1, y1, x2, y2)
+img = Image.fromarray(np.uint8(orig_img))
+region = img.crop(box)
+ax.imshow(region)
+ax.axis('off')
+fig.savefig('subimage.png',bbox_inches='tight')
 
 plt.show()

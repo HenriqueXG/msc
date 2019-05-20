@@ -113,12 +113,7 @@ class Spatial():
         for p in processes_ext:
             p.join()
 
-        region_vectors = [output_ext.get() for p in processes_ext]
-
-        vec = []
-        for v in region_vectors:
-            vec.append(v)
-
+        vec = [output_ext.get() for p in processes_ext]
         vec = [float(sum(l))/len(l) for l in zip(*vec)]
 
         return vec
@@ -135,22 +130,22 @@ class Spatial():
 
         with open(path_train, 'r', encoding='ISO-8859-1') as archive:
             for idx, line in enumerate(archive):
-                # try:
-                sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                scene_class = Path(line).parts[0].strip() # Get class supervision from path
+                    scene_class = Path(line).parts[0].strip() # Get class supervision from path
 
-                path = os.path.join(self.config['path'], 'data', 'MITImages', line.strip())
+                    path = os.path.join(self.config['path'], 'data', 'MITImages', line.strip())
 
-                img = Image.open(path)
-                img = self.img_channels(img)
+                    img = Image.open(path)
+                    img = self.img_channels(img)
 
-                vec = self.extract_regions(img)
+                    vec = self.extract_regions(img)
 
-                self.train_data['X'][idx] = list(vec) + list(self.train_data['X'][idx])
-                # except:
-                #     print('Error at {}'.format(line))
-                #     return
+                    self.train_data['X'][idx] = list(vec) + list(self.train_data['X'][idx])
+                except:
+                    print('Error at {}'.format(line))
+                    return
         with open(self.train_indoor_path_spatial, 'wb') as fp:
             pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 

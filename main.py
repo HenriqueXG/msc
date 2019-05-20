@@ -113,12 +113,16 @@ if __name__ == '__main__':
 
     print('Vector dimension: {}'.format(len(spatial.train_data['X'][0])))
 
+    hidden_units = 1000
+    activation = 'logistic'
+    kernel = 'rbf'
+
     results = []
     for i in range(1):
         print('Fitting...')
-        svm = SVC(kernel='rbf', probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
+        svm = SVC(kernel=kernel, probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
         # nn = None
-        nn = MLPClassifier(hidden_layer_sizes=(1000,), activation='logistic').fit(spatial.train_data['X'], spatial.train_data['Y'])
+        nn = MLPClassifier(hidden_layer_sizes=(hidden_units,), activation=activation).fit(spatial.train_data['X'], spatial.train_data['Y'])
 
         r = test_indoor(svm, nn, spatial.train_data, spatial.test_data)
         results.append(r)
@@ -126,7 +130,7 @@ if __name__ == '__main__':
         # with open(path_r, 'a') as fp:
         #     fp.write(str(r) + '\n') 
         
-    path_r = os.path.join(config['path'], 'media', 'rbf_1000_sigmoid.pkl')
+    path_r = os.path.join(config['path'], 'media', f'{kernel}_{hidden_units}_{activation}.pkl')
     with open(path_r, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL) 
 
