@@ -1,4 +1,4 @@
-# Main - Workspace
+# Main - Workspace / Global Workspace
 ## Henrique X. Goulart
 
 import json
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     print('Vector dimension: {}'.format(len(spatial.train_data['X'][0])))
 
     hidden_units = 1000
-    activation = 'logistic'
+    activation = 'relu'
     kernel = 'rbf'
 
     results = []

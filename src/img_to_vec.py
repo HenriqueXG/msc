@@ -68,41 +68,6 @@ class Img2Vec():
 
             return model, layer
 
-        elif model_name == 'resnet-50-ImageNet':
-            model = models.resnet50(pretrained=True)
-
-            if layer == 'default':
-                layer = model._modules.get('avgpool')
-                self.layer_output_size_pool = 2048
-            else:
-                layer = model._modules.get(layer)
-
-            return model, layer
-
-        elif model_name == 'resnet-18-Places':
-            model = models.resnet18()
-
-            file = torch.load(os.path.join(self.config['path'], 'data', 'resnet18_places365.pth.tar'), map_location='cpu')['state_dict']
-
-            new_model = {}# rename key
-            for key, value in file.items():
-                new_key = key.replace('module.','')
-                new_model[new_key] = value
-            file = new_model
-
-            model.fc = torch.nn.Linear(in_features=512, out_features=365, bias=True) # reshape for old resnet18 model
-
-            model.load_state_dict(file)
-
-
-            if layer == 'default':
-                layer = model._modules.get('avgpool')
-                self.layer_output_size_pool = 512
-            else:
-                layer = model._modules.get(layer)
-
-            return model, layer
-
         elif model_name == 'resnet-50-Places':
             model = models.resnet50()
 

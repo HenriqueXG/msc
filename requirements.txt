@@ -1,0 +1,6 @@
+matplotlib
+scipy
+sklearn
+gluoncv
+torch
+torchvision

@@ -1,19 +1,19 @@
 data/*
 media/images/
 *__pycache__*
-lib/*.so
+venv
+
 *.c
-main
 build
 CMakeFiles
 CMakeCache.txt
 CMakeLists.txt.plus
-Makefile
 cmake_install.cmake
 main_autogen/
 .idea*
 .remote-sync.json
 nohup.out
 settings.json
+.vscode
 
-!data/.gitkeep
+!data/MITImages/.gitkeep
