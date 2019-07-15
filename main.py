@@ -33,8 +33,6 @@ except ImportError:
 
 def test_indoor_model(svm, nn, train_data, test_data):
     # Perform test on MIT Indoor 67
-    print('Testing...')
-
     pred_svm = {}
     pred_nn = {}
     param = {}
@@ -71,7 +69,7 @@ def test_indoor(svm, nn, train_data, test_data):
     # return param['svm_scr']
 
     r = []
-    for alpha in np.linspace(0.0, 1.0, 10):
+    for alpha in np.arange(0.0, 1.05, 0.05):
         predictions = []
 
         for idx in range(len(test_data['X'])):
@@ -113,16 +111,12 @@ if __name__ == '__main__':
 
     print('Vector dimension: {}'.format(len(spatial.train_data['X'][0])))
 
-    hidden_units = 1000
-    activation = 'relu'
-    kernel = 'rbf'
-
     results = []
-    for i in range(1):
-        print('Fitting...')
-        svm = SVC(kernel=kernel, probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
+    for i in range(config['it']):
+        sys.stdout.write(f"Fitting/Testing... {i+1}/{config['it']}\r")
+        svm = SVC(kernel=config['kernel'], probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
         # nn = None
-        nn = MLPClassifier(hidden_layer_sizes=(hidden_units,), activation=activation).fit(spatial.train_data['X'], spatial.train_data['Y'])
+        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(spatial.train_data['X'], spatial.train_data['Y'])
 
         r = test_indoor(svm, nn, spatial.train_data, spatial.test_data)
         results.append(r)
@@ -130,7 +124,7 @@ if __name__ == '__main__':
         # with open(path_r, 'a') as fp:
         #     fp.write(str(r) + '\n') 
         
-    path_r = os.path.join(config['path'], 'media', f'{kernel}_{hidden_units}_{activation}.pkl')
+    path_r = os.path.join(config['path'], 'media', f"{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
     with open(path_r, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL) 
 

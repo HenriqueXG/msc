@@ -4,5 +4,9 @@
     "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
     "dataset":"indoor",
-    "pam_threshold":0.5
+    "pam_threshold":0.5,
+    "hidden_units": 1000,
+    "activation": "logistic",
+    "kernel": "rbf",
+    "it": 5
 }
