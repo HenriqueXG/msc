@@ -22,7 +22,6 @@ with open(path_r, 'rb') as fp:
 
 fig, ax = plt.subplots()
 for r, m in zip(results, markers):
-    print(r[:,0])
     ax.plot(r[:,0], r[:,1], marker = m, lw = 1)
 
 # X = np.array(r[:,0]).reshape((10,10))
