@@ -10,8 +10,6 @@ config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-markers = ['x','>','+','*','D']
-
 hidden_units = 1000
 activation = 'logistic'
 kernel = 'rbf'
@@ -21,15 +19,12 @@ with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
 
 fig, ax = plt.subplots()
-for r, m in zip(results, markers):
-    ax.plot(r[:,0], r[:,1], marker = m, lw = 1)
+mean = [0] * len(results[0][:,1])
+for r in results:
+    ax.plot(r[:,0], r[:,1], color = 'black', lw = 1)
+    mean = np.array(mean) + np.array(r[:,1])
 
-# X = np.array(r[:,0]).reshape((10,10))
-# Y = np.array(r[:,1]).reshape((10,10))
-# Z = np.array(r[:,2]).reshape((10,10))
-
-# plt.contourf(X,Y,Z)
-# plt.colorbar()
+ax.plot(results[0][:,0], mean/len(results), color = 'red', lw = 2)
 
 ax.set_xlabel('Alpha')
 ax.set_ylabel('Accuracy')
