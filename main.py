@@ -63,68 +63,81 @@ def test_indoor_model(svm, nn, train_data, test_data):
 
     return pred_svm, pred_nn, param
 
-def test_indoor(svm, nn, train_data, test_data):
+def test_indoor(svm, nn, train_data, test_data, alpha):
     # Testing - MIT Indoor 67
     pred_svm, pred_nn, param = test_indoor_model(svm, nn, train_data, test_data)
-    # return param['svm_scr']
 
-    r = []
-    for alpha in np.arange(0.0, 1.05, 0.05):
-        predictions = []
 
-        for idx in range(len(test_data['X'])):
-            v1 = pred_svm[idx]
-            v2 = pred_nn[idx]
+    predictions = []
 
-            # MinMax Normalization
-            v1 = [(x-min(v1))/(max(v1)-min(v1)) for x in v1]
-            v2 = [(x-min(v2))/(max(v2)-min(v2)) for x in v2]
+    for idx in range(len(test_data['X'])):
+        v1 = pred_svm[idx]
+        v2 = pred_nn[idx]
 
-            pred_ = [v1[i]*alpha + v2[i]*(1.0 - alpha) for i in range(len(v1))]
-            predictions.append(pred_)
+        # MinMax Normalization
+        v1 = [(x-min(v1))/(max(v1)-min(v1)) for x in v1]
+        v2 = [(x-min(v2))/(max(v2)-min(v2)) for x in v2]
 
-        corr = 0.0
-        for idx, pred_ in enumerate(predictions):
-            max_i = 0
-            max_v = 0
-            for i in range(len(pred_)):
-                if pred_[i] > max_v:
-                    max_v = pred_[i]
-                    max_i = i
-            pred_class = param['classes'][max_i]
-            scene_class = test_data['Y'][idx]
+        pred_ = [v1[i]*alpha + v2[i]*(1.0 - alpha) for i in range(len(v1))]
+        predictions.append(pred_)
 
-            if pred_class == scene_class:
-                corr += 1.0
+    corr = 0.0
+    for idx, pred_ in enumerate(predictions):
+        max_i = 0
+        max_v = 0
+        for i in range(len(pred_)):
+            if pred_[i] > max_v:
+                max_v = pred_[i]
+                max_i = i
+        pred_class = param['classes'][max_i]
+        scene_class = test_data['Y'][idx]
 
-        r.append([alpha, corr/len(test_data['Y'])])
-    return np.array(r)
+        if pred_class == scene_class:
+            corr += 1.0
 
-if __name__ == '__main__':
-    if os.path.exists(os.path.join(config['path'], 'data', 'test_indoor_spatial.pkl')) and os.path.exists(os.path.join(config['path'], 'data', 'train_indoor_spatial.pkl')):
-        # If Spatial Memory is preprocessed, it has all information preprocessed by the other memories. Thus, the others ones don't have to be loaded. 
-        spatial = Spatial(None, None)
-    else:
-        declarative = Declarative()
-        pam = PAM(declarative.train_data, declarative.test_data)
-        spatial = Spatial(pam.train_data, pam.test_data)
+    return corr/len(test_data['Y'])
 
-    print('Vector dimension: {}'.format(len(spatial.train_data['X'][0])))
+def CSM(pam, spatial, declarative):
+    train_data = {'X':[], 'Y':[]}
+    test_data = {'X':[], 'Y':[]}
 
+    for sample_a, sample_b, sample_c in zip(pam.train_data['X'], spatial.train_data['X'], declarative.train_data['X']):
+        train_data['X'].append(sample_a + sample_b + sample_c)
+
+    train_data['Y'] = declarative.train_data['Y']
+
+    for sample_a, sample_b, sample_c in zip(pam.test_data['X'], spatial.test_data['X'], declarative.test_data['X']):
+        test_data['X'].append(sample_a + sample_b + sample_c)
+
+    test_data['Y'] = declarative.test_data['Y']
+    
+    return train_data, test_data
+
+def exp_a(train_data, test_data):
     results = []
     for i in range(config['it']):
         sys.stdout.write(f"Fitting/Testing... {i+1}/{config['it']}\r")
-        svm = SVC(kernel=config['kernel'], probability=True).fit(spatial.train_data['X'], spatial.train_data['Y'])
-        # nn = None
-        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(spatial.train_data['X'], spatial.train_data['Y'])
 
-        r = test_indoor(svm, nn, spatial.train_data, spatial.test_data)
-        results.append(r)
-        # path_r = os.path.join(config['path'], 'media', 'svmsigmoid.txt')
-        # with open(path_r, 'a') as fp:
-        #     fp.write(str(r) + '\n') 
+        svm = SVC(kernel=config['kernel'], probability=True).fit(train_data['X'], train_data['Y'])
+        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(train_data['X'], train_data['Y'])
+
+        r = []
+        for alpha in np.arange(0.0, 1.05, 0.05):
+            r.append([alpha, test_indoor(svm, nn, train_data, test_data, alpha)])
+        results.append(np.array(r))
         
-    path_r = os.path.join(config['path'], 'media', f"{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
-    with open(path_r, 'wb') as fp:
-        pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL) 
+    path_result = os.path.join(config['path'], 'media', f"{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+    with open(path_result, 'wb') as fp:
+        pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
+
+if __name__ == '__main__':
+    pam = PAM()
+    spatial = Spatial()
+    declarative = Declarative()
+
+    train_data, test_data = CSM(pam, spatial, declarative)
+
+    print('CSM dimension: {}'.format(len(train_data['X'][0])))
+
+    exp_a(train_data, test_data)
 

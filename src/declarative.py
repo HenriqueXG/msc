@@ -21,18 +21,18 @@ class Declarative():
             from src.img_to_vec import Img2Vec
         self.img2vec = Img2Vec(model = self.config['arch_scene'])
 
-        self.train_indoor_path = os.path.join(self.config['path'], 'data', 'train_indoor_declarative.pkl')
-        if os.path.exists(self.train_indoor_path) and self.config['dataset'] == 'indoor':
+        self.train_indoor_path_declarative = os.path.join(self.config['path'], 'data', 'train_indoor_declarative.pkl')
+        if os.path.exists(self.train_indoor_path_declarative) and self.config['dataset'] == 'indoor':
             print('Loading declarative data (train)...')
-            with open(self.train_indoor_path, 'rb') as fp:
+            with open(self.train_indoor_path_declarative, 'rb') as fp:
                 self.train_data = pickle.load(fp)
         elif self.config['dataset'] == 'indoor':
             self.train_indoor()
 
-        self.test_indoor_path = os.path.join(self.config['path'], 'data', 'test_indoor_declarative.pkl')
-        if os.path.exists(self.test_indoor_path) and self.config['dataset'] == 'indoor':
+        self.test_indoor_path_declarative = os.path.join(self.config['path'], 'data', 'test_indoor_declarative.pkl')
+        if os.path.exists(self.test_indoor_path_declarative) and self.config['dataset'] == 'indoor':
             print('Loading declarative data (test)...')
-            with open(self.test_indoor_path, 'rb') as fp:
+            with open(self.test_indoor_path_declarative, 'rb') as fp:
                 self.test_data = pickle.load(fp)
         elif self.config['dataset'] == 'indoor':
             self.test_indoor()
@@ -117,7 +117,7 @@ class Declarative():
                     break
 
         self.train_data = {'X':X_train, 'Y':Y_train}
-        with open(self.train_indoor_path, 'wb') as fp:
+        with open(self.train_indoor_path_declarative, 'wb') as fp:
             pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_indoor(self):
@@ -151,5 +151,5 @@ class Declarative():
                     break
 
         self.test_data = {'X':X_test, 'Y':Y_test}
-        with open(self.test_indoor_path, 'wb') as fp:
+        with open(self.test_indoor_path_declarative, 'wb') as fp:
             pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)

@@ -1,4 +1,4 @@
-# PAM
+# PAM/EPAM
 ## Henrique X. Goulart
 
 import json
@@ -13,7 +13,7 @@ from pathlib import Path
 from gluoncv import model_zoo, data, utils
 
 class PAM():
-    def __init__(self, train_data, test_data):
+    def __init__(self):
         with open('config.json', 'r') as fp:
             self.config = json.load(fp)
 
@@ -33,7 +33,7 @@ class PAM():
                 self.train_data = pickle.load(fp)
         else:
             print('PAM train data not found!')
-            self.train_indoor(train_data)
+            self.train_indoor()
 
         self.test_indoor_path_pam = os.path.join(self.config['path'], 'data', 'test_indoor_pam.pkl')
         if os.path.exists(self.test_indoor_path_pam):
@@ -42,7 +42,7 @@ class PAM():
                 self.test_data = pickle.load(fp)
         else:
             print('PAM test data not found!')
-            self.test_indoor(test_data)
+            self.test_indoor()
 
     def img_channels(self, img):
         # Reshape for 3-channels
@@ -57,11 +57,11 @@ class PAM():
 
         return img
 
-    def train_indoor(self, td):
+    def train_indoor(self):
         # Train PAM of MIT Indoor 67
         print('Training PAM - MIT Indoor 67')
 
-        self.train_data = td.copy()
+        X_train = []
 
         path_train = os.path.join(self.config['path'], 'data', 'TrainImages.txt')
 
@@ -72,8 +72,6 @@ class PAM():
                 try:
                     sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                    scene_class = Path(line).parts[0].strip() # Get class supervision from path
-
                     path = os.path.join(self.config['path'], 'data', 'MITImages', line.strip())
 
                     ## YOLO
@@ -99,11 +97,8 @@ class PAM():
                     for i in ids:
                         ids_bool[i] = 1
 
-                    self.train_data['X'][idx] = ids_bool + list(self.train_data['X'][idx])
-
                     ## ImageNet
 
-                    img_name = idx
                     img = self.img_channels(img)
                     img = Image.fromarray(np.uint8(img))
 
@@ -122,18 +117,24 @@ class PAM():
                     if len(vec) == 0:
                         vec = np.zeros(self.img2vec.layer_output_size_pool).tolist()
 
-                    self.train_data['X'][idx] = list(vec) + list(self.train_data['X'][idx])
+                    ## Join vectors
+
+                    join_vec = ids_bool + list(vec)
+
+                    X_train.append(join_vec)
                 except:
                     print('Error at {}'.format(line))
                     return
+                    
+        self.train_data = {'X':X_train}
         with open(self.train_indoor_path_pam, 'wb') as fp:
             pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def test_indoor(self, td):
+    def test_indoor(self):
         # Test PAM on MIT Indoor 67
         print('Testing PAM - MIT Indoor 67')
 
-        self.test_data = td.copy()
+        X_test = []
 
         path_test = os.path.join(self.config['path'], 'data', 'TestImages.txt')
 
@@ -143,8 +144,6 @@ class PAM():
                 try:
                     sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                    scene_class = Path(line).parts[0].strip() # Get class supervision from path
-
                     path = os.path.join(self.config['path'], 'data', 'MITImages', line.strip())
 
                     ## YOLO
@@ -170,11 +169,8 @@ class PAM():
                     for i in ids:
                         ids_bool[i] = 1
 
-                    self.test_data['X'][idx] = ids_bool + list(self.test_data['X'][idx])
-
                     ## ImageNet
 
-                    img_name = idx
                     img = self.img_channels(img)
                     img = Image.fromarray(np.uint8(img))
 
@@ -193,10 +189,15 @@ class PAM():
                     if len(vec) == 0:
                         vec = np.zeros(self.img2vec.layer_output_size_pool).tolist()
 
-                    self.test_data['X'][idx] = list(vec) + list(self.test_data['X'][idx])
+                    ## Join vectors
+
+                    join_vec = ids_bool + list(vec)
+
+                    X_test.append(join_vec)
                 except:
                     print('Error at {}'.format(line))
                     return
 
-        with open(self.test_indoor_path_pam, 'wb') as fp:
+        self.test_data = {'X':X_test}
+        with open(self.train_indoor_path_pam, 'wb') as fp:
             pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)

@@ -4,6 +4,7 @@
     "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
     "dataset":"indoor",
+    "alpha":0.6,
     "pam_threshold":0.5,
     "hidden_units": 1000,
     "activation": "logistic",
