@@ -31,7 +31,7 @@ except ImportError:
     from src.declarative import Declarative
     from src.spatial import Spatial
 
-def test_indoor_model(svm, nn, train_data, test_data):
+def test_indoor_model(svm, nn, test_data):
     # Perform test on MIT Indoor 67
     pred_svm = {}
     pred_nn = {}
@@ -63,7 +63,7 @@ def test_indoor_model(svm, nn, train_data, test_data):
 
     return pred_svm, pred_nn, param
 
-def test_indoor(svm, nn, train_data, test_data, alpha):
+def test_indoor(svm, nn, test_data, alpha):
     # Testing - MIT Indoor 67
     pred_svm, pred_nn, param = test_indoor_model(svm, nn, train_data, test_data)
 
@@ -102,12 +102,14 @@ def CSM(pam, spatial, declarative):
     test_data = {'X':[], 'Y':[]}
 
     for sample_a, sample_b, sample_c in zip(pam.train_data['X'], spatial.train_data['X'], declarative.train_data['X']):
-        train_data['X'].append(sample_a + sample_b + sample_c)
+        sample = np.concatenate((np.array(sample_a), np.array(sample_b), np.array(sample_c)), axis=0).tolist()
+        train_data['X'].append(sample)
 
     train_data['Y'] = declarative.train_data['Y']
 
     for sample_a, sample_b, sample_c in zip(pam.test_data['X'], spatial.test_data['X'], declarative.test_data['X']):
-        test_data['X'].append(sample_a + sample_b + sample_c)
+        sample = np.concatenate((np.array(sample_a), np.array(sample_b), np.array(sample_c)), axis=0).tolist()
+        test_data['X'].append(sample)
 
     test_data['Y'] = declarative.test_data['Y']
     
@@ -116,14 +118,14 @@ def CSM(pam, spatial, declarative):
 def exp_a(train_data, test_data):
     results = []
     for i in range(config['it']):
-        sys.stdout.write(f"Fitting/Testing... {i+1}/{config['it']}\r")
+        sys.stdout.write(f"Fitting and Testing... {i+1}/{config['it']}\n")
 
         svm = SVC(kernel=config['kernel'], probability=True).fit(train_data['X'], train_data['Y'])
         nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(train_data['X'], train_data['Y'])
 
         r = []
         for alpha in np.arange(0.0, 1.05, 0.05):
-            r.append([alpha, test_indoor(svm, nn, train_data, test_data, alpha)])
+            r.append([alpha, test_indoor(svm, nn, test_data, alpha)])
         results.append(np.array(r))
         
     path_result = os.path.join(config['path'], 'media', f"{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")

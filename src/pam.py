@@ -199,5 +199,5 @@ class PAM():
                     return
 
         self.test_data = {'X':X_test}
-        with open(self.train_indoor_path_pam, 'wb') as fp:
+        with open(self.test_indoor_path_pam, 'wb') as fp:
             pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
