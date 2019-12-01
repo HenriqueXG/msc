@@ -65,8 +65,7 @@ def test_indoor_model(svm, nn, test_data):
 
 def test_indoor(svm, nn, test_data, alpha):
     # Testing - MIT Indoor 67
-    pred_svm, pred_nn, param = test_indoor_model(svm, nn, train_data, test_data)
-
+    pred_svm, pred_nn, param = test_indoor_model(svm, nn, test_data)
 
     predictions = []
 
