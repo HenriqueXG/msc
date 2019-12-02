@@ -6,7 +6,7 @@ Install pip (Python 3) dependencies:
 
 ```pip install -r requirements.txt```
 
-Install CMake and g++.
+Install Make, CMake, python3x-devel and gcc/g++.
 
 Download the pre-trained Places-CNN: http://places2.csail.mit.edu/models_places365/resnet50_places365.pth.tar . Then, move it to ```data``` folder.
 
