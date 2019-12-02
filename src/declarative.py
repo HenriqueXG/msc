@@ -112,7 +112,7 @@ class Declarative():
 
                     X_train.append(vec)
                     Y_train.append(scene_class)
-                except Exception e:
+                except Exception, e:
                     print('Error at {}'.format(line))
                     print(str(e))
                     return
@@ -147,7 +147,7 @@ class Declarative():
 
                     X_test.append(vec)
                     Y_test.append(scene_class)
-                except Exception e:
+                except Exception, e:
                     print('Error at {}'.format(line))
                     print(str(e))
                     return
