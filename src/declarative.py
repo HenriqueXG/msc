@@ -112,9 +112,10 @@ class Declarative():
 
                     X_train.append(vec)
                     Y_train.append(scene_class)
-                except:
+                except Exception e:
                     print('Error at {}'.format(line))
-                    break
+                    print(str(e))
+                    return
 
         self.train_data = {'X':X_train, 'Y':Y_train}
         with open(self.train_indoor_path_declarative, 'wb') as fp:
@@ -146,9 +147,10 @@ class Declarative():
 
                     X_test.append(vec)
                     Y_test.append(scene_class)
-                except:
+                except Exception e:
                     print('Error at {}'.format(line))
-                    break
+                    print(str(e))
+                    return
 
         self.test_data = {'X':X_test, 'Y':Y_test}
         with open(self.test_indoor_path_declarative, 'wb') as fp:
