@@ -16,4 +16,4 @@ nohup.out
 settings.json
 .vscode
 
-!data/MITImages/.gitkeep
+!data/.gitkeep
