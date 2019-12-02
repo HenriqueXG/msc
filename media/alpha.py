@@ -10,11 +10,7 @@ config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-hidden_units = 1000
-activation = 'logistic'
-kernel = 'rbf'
-
-path_r = os.path.join(config['path'], 'media', f'{kernel}_{hidden_units}_{activation}.pkl')
+path_r = os.path.join(config['path'], 'media', f"{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
 with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
 
