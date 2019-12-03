@@ -120,7 +120,7 @@ def exp_a(train_data, test_data):
     for i in range(config['it']):
         sys.stdout.write(f"Fitting and Testing... {i+1}/{config['it']} -- {datetime.datetime.now()}\n")
 
-        svm = SVC(kernel=config['kernel'], probability=True).fit(train_data['X'], train_data['Y'])
+        svm = SVC(kernel=config['kernel'], probability=True, gamma='scale').fit(train_data['X'], train_data['Y'])
         nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(train_data['X'], train_data['Y'])
 
         r = []
