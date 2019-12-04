@@ -116,6 +116,7 @@ def CSM(pam, spatial, declarative):
     return train_data, test_data
 
 def exp_a(train_data, test_data):
+    print("Experiment A - Running...")
     results = []
     for i in range(config['it']):
         sys.stdout.write(f"Fitting and Testing... {i+1}/{config['it']} -- {datetime.datetime.now()}\n")
@@ -128,9 +129,29 @@ def exp_a(train_data, test_data):
             r.append([alpha, test_indoor(svm, nn, test_data, alpha)])
         results.append(np.array(r))
         
-    path_result = os.path.join(config['path'], 'media', f"{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+    path_result = os.path.join(config['path'], 'media', f"exp_a_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    print("Experiment A - Done!")
+
+def exp_b(train_data, test_data):
+    print("Experiment B - Running...")
+    results = []
+    for i in range(config['it']):
+        sys.stdout.write(f"Fitting and Testing... {i+1}/{config['it']} -- {datetime.datetime.now()}\n")
+
+        svm = SVC(kernel=config['kernel'], probability=True, gamma='scale').fit(train_data['X'], train_data['Y'])
+        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(train_data['X'], train_data['Y'])
+
+        r = test_indoor(svm, nn, test_data, config['alpha'])
+        results.append(r)
+        
+    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+    with open(path_result, 'wb') as fp:
+        pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    print("Experiment B - Done!")
 
 if __name__ == '__main__':
     pam = PAM()
@@ -142,4 +163,5 @@ if __name__ == '__main__':
     print('CSM dimension: {}'.format(len(train_data['X'][0])))
 
     exp_a(train_data, test_data)
+    # exp_b(train_data, test_data)
 

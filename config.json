@@ -7,7 +7,7 @@
     "alpha":0.6,
     "pam_threshold":0.5,
     "hidden_units": 1000,
-    "activation": "logistic",
+    "activation": "relu",
     "kernel": "rbf",
     "it": 5
 }
