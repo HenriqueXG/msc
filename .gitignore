@@ -3,7 +3,7 @@ media/images/
 *__pycache__*
 venv
 
-*.pkl
+**/*.pkl
 *.c
 build
 CMakeFiles
