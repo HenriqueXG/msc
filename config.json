@@ -9,7 +9,7 @@
     "hidden_units": 1000,
     "activation": "logistic",
     "kernel": "rbf",
-    "it": 5,
+    "it": 10,
     "exp_a": 0,
     "exp_b": 1
 }
