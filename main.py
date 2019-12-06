@@ -162,6 +162,8 @@ if __name__ == '__main__':
 
     print('CSM dimension: {}'.format(len(train_data['X'][0])))
 
-    exp_a(train_data, test_data)
-    # exp_b(train_data, test_data)
+    if config['exp_a']:
+        exp_a(train_data, test_data)
+    if config['exp_b']:
+        exp_b(train_data, test_data)
 
