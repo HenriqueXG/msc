@@ -147,7 +147,7 @@ def exp_b(train_data, test_data):
         r = test_indoor(svm, nn, test_data, config['alpha'])
         results.append(r)
         
-    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
