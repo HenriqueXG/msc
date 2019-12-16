@@ -15,7 +15,7 @@ with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
 
 fig, ax = plt.subplots()
-print (len(results))
+
 mean = [0] * len(results[0][:,1])
 for r in results:
     ax.plot(r[:,0], r[:,1], color = 'black', lw = 1)
