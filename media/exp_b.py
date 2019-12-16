@@ -22,7 +22,7 @@ ax.bar(x, results)
 ax.set_ylim(0.6,1.0)
 ax.set_xlabel('Runs')
 ax.set_ylabel('Accuracy')
-ax.set_xticks(x, (for i+1 in range(len(results))))
+ax.set_xticks(x, (i+1 for i in range(len(results))))
 
 plt.savefig(os.path.join(config['path'], 'media', 'images', 'exp_b.png'), dpi=300)
 plt.show()
