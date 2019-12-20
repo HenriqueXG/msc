@@ -122,14 +122,14 @@ def exp_a(train_data, test_data):
         sys.stdout.write(f"Fitting and Testing... {i+1}/{config['it']} -- {datetime.datetime.now()}\n")
 
         svm = SVC(kernel=config['kernel'], probability=True, gamma='scale').fit(train_data['X'], train_data['Y'])
-        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(train_data['X'], train_data['Y'])
+        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation'], solver=config['optimizer']).fit(train_data['X'], train_data['Y'])
 
         r = []
         for alpha in np.arange(0.0, 1.05, 0.05):
             r.append([alpha, test_indoor(svm, nn, test_data, alpha)])
         results.append(np.array(r))
         
-    path_result = os.path.join(config['path'], 'media', f"exp_a_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+    path_result = os.path.join(config['path'], 'media', f"exp_a_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
@@ -142,12 +142,12 @@ def exp_b(train_data, test_data):
         sys.stdout.write(f"Fitting and Testing... {i+1}/{config['it']} -- {datetime.datetime.now()}\n")
 
         svm = SVC(kernel=config['kernel'], probability=True, gamma='scale').fit(train_data['X'], train_data['Y'])
-        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation']).fit(train_data['X'], train_data['Y'])
+        nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation'], solver=config['optimizer']).fit(train_data['X'], train_data['Y'])
 
         r = test_indoor(svm, nn, test_data, config['alpha'])
         results.append(r)
         
-    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
