@@ -14,6 +14,9 @@ path_r = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config
 with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
 
+mean = sum(results)/len(results)
+print(f"Mean: {mean}")
+
 fig, ax = plt.subplots()
 
 x = np.arange(len(results))
