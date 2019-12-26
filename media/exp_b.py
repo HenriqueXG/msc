@@ -10,12 +10,31 @@ config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-path_r = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}.pkl")
+alphas = ['0.0']
+datasets = [config['dataset']]
+kernels = ['rbf', 'sigmoid', 'linear']
+hidden_units = [config['hidden_units']]
+activations = ['relu', 'logistic', 'tanh']
+optimizers = ['adam', 'sgd']
+
+for alpha in alphas:
+    for dataset in datasets:
+        for kernel in kernels:
+            for hu in hidden_units:
+                for activation in activations:
+                    for optimizer in optimizers:
+                        path_r = path_r = os.path.join(config['path'], 'media', f"exp_b_{alpha}_{dataset}_{kernel}_{hu}_{activation}_{optimizer}.pkl")
+                        if os.path.exists(path_r):
+                            with open(path_r, 'rb') as fp:
+                                results = pickle.load(fp)
+                            print(f"------ Result of: {alpha}_{dataset}_{kernel}_{hu}_{activation}_{optimizer} ------")
+                            mean = sum(results)/len(results)
+                            print(f"Mean: {mean}")
+                            print('#####################')
+
+path_r = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
 with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
-
-mean = sum(results)/len(results)
-print(f"Mean: {mean}")
 
 fig, ax = plt.subplots()
 
