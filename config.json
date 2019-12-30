@@ -8,9 +8,9 @@
     "pam_threshold":0.5,
     "hidden_units": 1000,
     "activation": "logistic",
-    "optimizer": "sgd",
-    "kernel": "sigmoid",
+    "optimizer": "adam",
+    "kernel": "linear",
     "it": 10,
-    "exp_a": 0,
-    "exp_b": 1
+    "exp_a": 1,
+    "exp_b": 0
 }

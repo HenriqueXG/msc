@@ -13,7 +13,7 @@ with open('config.json', 'r') as fp:
 alphas = ['0.0']
 datasets = [config['dataset']]
 kernels = ['rbf', 'sigmoid', 'linear']
-hidden_units = [100, 500, 1000]
+hidden_units = [100, 500, 1000, 2000]
 activations = ['relu', 'logistic', 'tanh']
 optimizers = ['adam', 'sgd']
 
