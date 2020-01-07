@@ -32,7 +32,7 @@ for alpha in alphas:
                             print(f"Mean: {mean}")
                             print('#####################')
 
-path_r = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+path_r = os.path.join(config['path'], 'media', f"exp_b_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
 with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
 

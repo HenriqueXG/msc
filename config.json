@@ -4,13 +4,13 @@
     "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
     "dataset":"indoor",
-    "alpha":0.0,
-    "pam_threshold":0.5,
+    "alpha":0.5,
+    "pam_threshold":0.7,
     "hidden_units": 1000,
     "activation": "logistic",
     "optimizer": "adam",
-    "kernel": "linear",
+    "kernel": "rbf",
     "it": 10,
-    "exp_a": 1,
-    "exp_b": 0
+    "exp_a": 0,
+    "exp_b": 1
 }

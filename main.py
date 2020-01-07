@@ -32,8 +32,8 @@ except ImportError:
     from src.declarative import Declarative
     from src.spatial import Spatial
 
-def test_indoor_model(svm, nn, test_data):
-    # Perform test on MIT Indoor 67
+def model_pred(svm, nn, test_data):
+    # Predictions
     pred_svm = {}
     pred_nn = {}
     param = {}
@@ -64,9 +64,9 @@ def test_indoor_model(svm, nn, test_data):
 
     return pred_svm, pred_nn, param
 
-def test_indoor(svm, nn, test_data, alpha):
-    # Testing - MIT Indoor 67
-    pred_svm, pred_nn, param = test_indoor_model(svm, nn, test_data)
+def test(svm, nn, test_data, alpha):
+    # Testing predictions
+    pred_svm, pred_nn, param = model_pred(svm, nn, test_data)
 
     predictions = []
 
@@ -126,10 +126,10 @@ def exp_a(train_data, test_data):
 
         r = []
         for alpha in np.arange(0.0, 1.05, 0.05):
-            r.append([alpha, test_indoor(svm, nn, test_data, alpha)])
+            r.append([alpha, test(svm, nn, test_data, alpha)])
         results.append(np.array(r))
         
-    path_result = os.path.join(config['path'], 'media', f"exp_a_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+    path_result = os.path.join(config['path'], 'media', f"exp_a_{config['pam_threshold']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
@@ -144,10 +144,10 @@ def exp_b(train_data, test_data):
         svm = SVC(kernel=config['kernel'], probability=True, gamma='scale').fit(train_data['X'], train_data['Y'])
         nn = MLPClassifier(hidden_layer_sizes=(config['hidden_units'],), activation=config['activation'], solver=config['optimizer']).fit(train_data['X'], train_data['Y'])
 
-        r = test_indoor(svm, nn, test_data, config['alpha'])
+        r = test(svm, nn, test_data, config['alpha'])
         results.append(r)
         
-    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+    path_result = os.path.join(config['path'], 'media', f"exp_b_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     

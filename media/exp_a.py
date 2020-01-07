@@ -10,7 +10,7 @@ config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-path_r = os.path.join(config['path'], 'media', f"exp_a_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+path_r = os.path.join(config['path'], 'media', f"exp_a_{config['pam_threshold']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
 with open(path_r, 'rb') as fp:
     results = pickle.load(fp)
 
