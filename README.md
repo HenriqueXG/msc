@@ -39,3 +39,5 @@ To run with Cython: ```./configure && ./main```
 Once trained, the train files (Memories) is saved into ```data```. 
 
 The execution takes ~6Gb of RAM.
+
+Running in background: ```rm -rf /tmp/msc.log && nohup python3 -u main.py >> /tmp/msc.log 2>&1 &```.
