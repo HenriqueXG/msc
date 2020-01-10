@@ -5,7 +5,7 @@
     "arch_obj":"resnet-18-ImageNet",
     "dataset":"indoor",
     "alpha":0.5,
-    "pam_threshold":0.9,
+    "pam_threshold":0.5,
     "hidden_units": 1000,
     "activation": "logistic",
     "optimizer": "adam",
