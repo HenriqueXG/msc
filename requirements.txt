@@ -6,4 +6,4 @@ torch
 torchvision
 cython
 mxnet
-pillow==6.2
+pillow==7.0.0
