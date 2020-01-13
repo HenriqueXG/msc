@@ -27,7 +27,7 @@ try:
     from lib.pam import PAM
     from lib.declarative import Declarative
     from lib.spatial import Spatial
-except ImportError:
+except (ImportError, ModuleNotFoundError) as e:
     from src.pam import PAM
     from src.declarative import Declarative
     from src.spatial import Spatial
@@ -159,6 +159,9 @@ if __name__ == '__main__':
     declarative = Declarative()
 
     train_data, test_data = CSM(pam, spatial, declarative)
+    del pam
+    del spatial
+    del declarative
 
     print('CSM dimension: {}'.format(len(train_data['X'][0])))
 

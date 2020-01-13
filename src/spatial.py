@@ -130,7 +130,7 @@ class Spatial():
                     vec = self.extract_regions(img)
 
                     X_train.append(vec)
-                except Exception, e:
+                except Exception as e:
                     print('Error at {}'.format(line))
                     print(str(e))
                     return
@@ -162,7 +162,7 @@ class Spatial():
                     vec = self.extract_regions(img)
 
                     X_test.append(vec)
-                except Exception, e:
+                except Exception as e:
                     print('Error at {}'.format(line))
                     print(str(e))
                     return

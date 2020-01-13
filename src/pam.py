@@ -122,7 +122,7 @@ class PAM():
                     join_vec = ids_bool + list(vec)
 
                     X_train.append(join_vec)
-                except Exception, e:
+                except Exception as e:
                     print('Error at {}'.format(line))
                     print(str(e))
                     return
@@ -195,7 +195,7 @@ class PAM():
                     join_vec = ids_bool + list(vec)
 
                     X_test.append(join_vec)
-                except Exception, e:
+                except Exception as e:
                     print('Error at {}'.format(line))
                     print(str(e))
                     return
