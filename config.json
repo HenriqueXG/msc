@@ -3,15 +3,14 @@
     "arch_pam":"yolo3_darknet53_coco",
     "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
-    "dataset":"sun397",
-    "sun_idx": 1,
+    "dataset":"indoor",
     "alpha":0.5,
     "pam_threshold":0.5,
     "hidden_units": 1000,
     "activation": "logistic",
     "optimizer": "adam",
     "kernel": "rbf",
-    "it": 10,
+    "it": 1,
     "exp_a": 0,
     "exp_b": 1
 }
