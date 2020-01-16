@@ -82,7 +82,8 @@ def test(svm, nn, test_data, alpha):
         predictions.append(pred_)
 
     corr = 0.0
-    class_predicted = []
+    classes_predicted = {}
+    classes = []
     for idx, pred_ in enumerate(predictions):
         max_i = 0
         max_v = 0
@@ -92,14 +93,15 @@ def test(svm, nn, test_data, alpha):
                 max_i = i
         pred_class = param['classes'][max_i]
         scene_class = test_data['Y'][idx]
-        class_predicted.append(scene_class)
+        classes.append(scene_class)
 
         if pred_class == scene_class:
             corr += 1.0
     
+    classes_predicted = {'classes_predicted': classes_predicted, 'predictions': predictions}
     path_result = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
     with open(path_result, 'wb') as fp:
-        pickle.dump(class_predicted, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(classes_predicted, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     return corr/len(test_data['Y'])
 
