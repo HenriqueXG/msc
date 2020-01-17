@@ -131,8 +131,6 @@ class Spatial():
         # Train SUN397 scene vectors
         print('Training Spatial Memory - SUN 397')
 
-        self.train_data = []
-
         for i in range(10):
             print('Training_{:0>2d}.txt'.format(i+1))
 
@@ -161,15 +159,12 @@ class Spatial():
                         return
             print('')
 
-            self.train_data.append({'X':X_train})
-        with open(self.train_sun397_path_pam, 'wb') as fp:
-            pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            with open(self.train_sun397_path_spatial + '_training_{:0>2d}'.format(i+1), 'wb') as fp:
+                pickle.dump({'X':X_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_sun397(self):
         # Test SUN397 scene vectors
         print('Testing Spatial Memory - SUN 397')
-
-        self.test_data = []
 
         for i in range(10):
             print('Testing_{:0>2d}.txt'.format(i+1))
@@ -198,10 +193,9 @@ class Spatial():
                         print(str(e))
                         return
             print('')
-
-            self.test_data.append({'X':X_test})
-        with open(self.test_sun397_path_pam, 'wb') as fp:
-            pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            
+            with open(self.test_sun397_path_spatial + '_testing_{:0>2d}'.format(i+1), 'wb') as fp:
+                pickle.dump({'X':X_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def train_indoor(self):
         # Train Spatial Memory on MIT Indoor 67

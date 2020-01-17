@@ -72,8 +72,6 @@ class Declarative():
         # Train SUN397 scene vectors
         print('Training Declarative Memory - SUN 397')
 
-        self.train_data = []
-
         for i in range(10):
             print('Training_{:0>2d}.txt'.format(i+1))
 
@@ -106,15 +104,12 @@ class Declarative():
                         return
             print('')
 
-            self.train_data.append({'X':X_train, 'Y':Y_train})
-        with open(self.train_sun397_path_declarative, 'wb') as fp:
-            pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            with open(self.train_sun397_path_declarative + '_training_{:0>2d}'.format(i+1), 'wb') as fp:
+                pickle.dump({'X':X_train, 'Y':Y_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_sun397(self):
         # Test SUN397 scene vectors
         print('Testing Declarative Memory - SUN 397')
-
-        self.test_data = []
 
         for i in range(10):
             print('Testing_{:0>2d}.txt'.format(i+1))
@@ -148,9 +143,8 @@ class Declarative():
                         return
             print('')
 
-            self.test_data.append({'X':X_test, 'Y':Y_test})
-        with open(self.test_sun397_path_declarative, 'wb') as fp:
-            pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            with open(self.test_sun397_path_declarative + '_testing_{:0>2d}'.format(i+1), 'wb') as fp:
+                pickle.dump({'X':X_test, 'Y':Y_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def train_indoor(self):
         # Train Declarative Memory on MIT Indoor 67 scene vectors
