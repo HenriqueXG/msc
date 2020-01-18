@@ -43,7 +43,6 @@ def model_pred(svm, nn, test_data):
         pred_nn[idx] = nn.predict_proba([test_data['X'][idx]])[0]
 
     param['classes'] = svm.classes_
-    param['nn_scr'] = nn.score(test_data['X'], test_data['Y'])
 
     corr = 0.0
     for idx in range(len(test_data['X'])):
@@ -60,7 +59,6 @@ def model_pred(svm, nn, test_data):
 
         if pred_class == scene_class:
             corr += 1.0
-    param['svm_scr'] = corr/len(test_data['X'])
 
     return pred_svm, pred_nn, param
 
@@ -92,7 +90,7 @@ def test(svm, nn, test_data, alpha):
                 max_i = i
         pred_class = param['classes'][max_i]
         scene_class = test_data['Y'][idx]
-        classes.append(scene_class)
+        classes.append(pred_class)
 
         if pred_class == scene_class:
             corr += 1.0
