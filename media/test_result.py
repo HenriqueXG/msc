@@ -14,7 +14,15 @@ path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_thresh
 with open(path_r, 'rb') as fp:
     classes_predicted = pickle.load(fp)
 
-print(classes_predicted)
+path_test = os.path.join(config['path'], 'data', 'test_indoor_declarative.pkl')
+with open(path_test, 'rb') as fp:
+    test_data = pickle.load(fp)
+
+corr = 0
+for pred_class, scene_class in zip(classes_predicted['classes'], test_data['Y']):
+    if pred_class == scene_class:
+        corr += 1
+print(corr/len(test_data['Y']))
 
 fig, ax = plt.subplots()
 
