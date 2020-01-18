@@ -138,7 +138,7 @@ def exp_a(train_data, test_data):
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
-    print("Experiment A - Done!")
+    print(f"Experiment A - Done! -- {datetime.datetime.now()}")
 
 def exp_b(train_data, test_data):
     print("Experiment B - Running...")
@@ -156,7 +156,7 @@ def exp_b(train_data, test_data):
     with open(path_result, 'wb') as fp:
         pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     
-    print("Experiment B - Done!")
+    print(f"Experiment B - Done! -- {datetime.datetime.now()}")
 
 if __name__ == '__main__':
     pam = PAM()
