@@ -3,7 +3,7 @@
     "arch_pam":"yolo3_darknet53_coco",
     "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
-    "dataset":"indoor",
+    "dataset":"sun397",
     "alpha":0.5,
     "pam_threshold":0.5,
     "hidden_units": 1000,
