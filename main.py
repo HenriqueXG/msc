@@ -44,22 +44,6 @@ def model_pred(svm, nn, test_data):
 
     param['classes'] = svm.classes_
 
-    corr = 0.0
-    for idx in range(len(test_data['X'])):
-        max_i = 0
-        max_v = 0
-        pred_ = pred_svm[idx]
-
-        for i in range(len(pred_)):
-            if pred_[i] > max_v:
-                max_v = pred_[i]
-                max_i = i
-        pred_class = param['classes'][max_i]
-        scene_class = test_data['Y'][idx]
-
-        if pred_class == scene_class:
-            corr += 1.0
-
     return pred_svm, pred_nn, param
 
 def test(svm, nn, test_data, alpha):
@@ -81,6 +65,10 @@ def test(svm, nn, test_data, alpha):
 
     corr = 0.0
     classes = []
+    if config['dataset'] == 'indoor':
+        y_test = list([0] * 67)
+    elif config['dataset'] == 'sun397':
+        y_test = list([0] * 397)
     for idx, pred_ in enumerate(predictions):
         max_i = 0
         max_v = 0
@@ -91,11 +79,14 @@ def test(svm, nn, test_data, alpha):
         pred_class = param['classes'][max_i]
         scene_class = test_data['Y'][idx]
         classes.append(pred_class)
+        
+        test_idx = param['classes'].tolist().index(scene_class)
+        y_test[test_idx] = 1
 
         if pred_class == scene_class:
             corr += 1.0
     
-    classes_predicted = {'classes': classes, 'predictions': predictions}
+    classes_predicted = {'classes': classes, 'predictions': predictions, 'y_test': y_test}
     path_result = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
     with open(path_result, 'wb') as fp:
         pickle.dump(classes_predicted, fp, protocol=pickle.HIGHEST_PROTOCOL)

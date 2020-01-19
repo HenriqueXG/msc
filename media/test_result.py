@@ -5,6 +5,8 @@ import numpy as np
 import os
 import pickle
 import json
+from sklearn import metrics
+from sklearn.metrics import precision_recall_curve, roc_curve
 
 config = {}
 with open('config.json', 'r') as fp:
@@ -24,9 +26,25 @@ for pred_class, scene_class in zip(classes_predicted['classes'], test_data['Y'])
         corr += 1
 print(corr/len(test_data['Y']))
 
+# Print the confusion matrix
+print(metrics.confusion_matrix(test_data['Y'], classes_predicted['classes']))
+
+# Print the precision and recall, among other metrics
+print(metrics.classification_report(test_data['Y'], classes_predicted['classes'], digits=3))
+
 fig, ax = plt.subplots()
 
+precision = dict()
+recall = dict()
+for i in range(67):
+    precision[i], recall[i], _ = precision_recall_curve(y_test[:, i], classes_predicted['predictions'][:, i])
+    plt.plot(recall[i], precision[i], lw=2, label='class {}'.format(i))
 
+plt.xlabel("recall")
+plt.ylabel("precision")
+plt.legend(loc="best")
+plt.title("precision vs. recall curve")
+plt.show()
 
 ax.set_xlabel('Alpha')
 ax.set_ylabel('Accuracy')

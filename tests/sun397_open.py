@@ -28,7 +28,7 @@ def img_channels(img):
     return img
 
 root = os.path.join(config['path'], 'data', 'SUN397')
-path = root + '/a/assembly_line/sun_aohzzprghfrqbgkt.jpg'
+path = root + '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg'
 
 img = Image.open(path)
 img = img_channels(img)
