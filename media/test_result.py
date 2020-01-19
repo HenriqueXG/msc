@@ -31,13 +31,13 @@ print(metrics.confusion_matrix(test_data['Y'], classes_predicted['classes']))
 
 # Print the precision and recall, among other metrics
 print(metrics.classification_report(test_data['Y'], classes_predicted['classes'], digits=3))
-
+print(classes_predicted['y_test'])
 fig, ax = plt.subplots()
 
 precision = dict()
 recall = dict()
 for i in range(67):
-    precision[i], recall[i], _ = precision_recall_curve(y_test[:, i], classes_predicted['predictions'][:, i])
+    precision[i], recall[i], _ = precision_recall_curve(classes_predicted['y_test'][:, i], classes_predicted['predictions'][:, i])
     plt.plot(recall[i], precision[i], lw=2, label='class {}'.format(i))
 
 plt.xlabel("recall")

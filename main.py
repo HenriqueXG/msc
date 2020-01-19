@@ -65,10 +65,7 @@ def test(svm, nn, test_data, alpha):
 
     corr = 0.0
     classes = []
-    if config['dataset'] == 'indoor':
-        y_test = list([0] * 67)
-    elif config['dataset'] == 'sun397':
-        y_test = list([0] * 397)
+    y_test = []
     for idx, pred_ in enumerate(predictions):
         max_i = 0
         max_v = 0
@@ -80,8 +77,13 @@ def test(svm, nn, test_data, alpha):
         scene_class = test_data['Y'][idx]
         classes.append(pred_class)
         
+        if config['dataset'] == 'indoor':
+            y = list([0] * 67)
+        elif config['dataset'] == 'sun397':
+            y = list([0] * 397)
         test_idx = param['classes'].tolist().index(scene_class)
-        y_test[test_idx] = 1
+        y[test_idx] = 1
+        y_test.append(y)
 
         if pred_class == scene_class:
             corr += 1.0
