@@ -2,9 +2,12 @@ import json
 import os
 import sys
 import pickle
+import scipy
 import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
 from pathlib import Path
+from gluoncv import model_zoo, data, utils
 
 config = {}
 with open('config.json', 'r') as fp:
@@ -30,6 +33,11 @@ def img_channels(img):
 root = os.path.join(config['path'], 'data', 'SUN397')
 path = root + '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg'
 
-img = Image.open(path)
-img = img_channels(img)
-vec = img2vec.get_vec(img)
+## YOLO
+
+im_fname = utils.download('', path = path)
+img = Image.open(im_fname)
+if img.mode != 'RGB':
+    img = img.convert('RGB')
+    img.save(im_fname)
+x, img = data.transforms.presets.rcnn.load_test(im_fname)

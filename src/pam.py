@@ -117,6 +117,10 @@ class PAM():
                         ## YOLO
 
                         im_fname = utils.download('', path = path)
+                        img = Image.open(im_fname)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                            img.save(im_fname)
                         x, img = data.transforms.presets.rcnn.load_test(im_fname)
 
                         box_ids, sscores, bboxes = self.net(x)
@@ -163,9 +167,11 @@ class PAM():
 
                         X_train.append(join_vec)
                     except Exception as e:
-                        print('Error at {}'.format(line))
-                        print(str(e))
-                        return
+                        with open(os.path.join(self.config['path'], 'error_training_{:0>2d}.log'.format(i+1)), 'a') as log_file:
+                            log_file.write('Error at {} \n'.format(line))
+                            log_file.write(str(e) + '\n')
+                            log_file.write('@@@\n')
+                        pass
             print('')
 
             with open(self.train_sun397_path_pam + '_training_{:0>2d}'.format(i+1), 'wb') as fp:
@@ -194,6 +200,10 @@ class PAM():
                         ## YOLO
 
                         im_fname = utils.download('', path = path)
+                        img = Image.open(im_fname)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                            img.save(im_fname)
                         x, img = data.transforms.presets.rcnn.load_test(im_fname)
 
                         box_ids, sscores, bboxes = self.net(x)
@@ -240,9 +250,11 @@ class PAM():
 
                         X_test.append(join_vec)
                     except Exception as e:
-                        print('Error at {}'.format(line))
-                        print(str(e))
-                        return
+                        with open(os.path.join(self.config['path'], 'error_testing_{:0>2d}.log'.format(i+1)), 'a') as log_file:
+                            log_file.write('Error at {} \n'.format(line))
+                            log_file.write(str(e) + '\n')
+                            log_file.write('@@@\n')
+                        pass
             print('')
 
             with open(self.test_sun397_path_pam + '_testing_{:0>2d}'.format(i+1), 'wb') as fp:

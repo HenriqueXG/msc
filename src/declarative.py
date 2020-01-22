@@ -92,6 +92,8 @@ class Declarative():
                         path = root + line.strip()
 
                         img = Image.open(path)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
                         img = self.img_channels(img)
 
                         vec = self.img2vec.get_vec(img)
@@ -131,6 +133,8 @@ class Declarative():
                         path = root + line.strip()
 
                         img = Image.open(path)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
                         img = self.img_channels(img)
 
                         vec = self.img2vec.get_vec(img)

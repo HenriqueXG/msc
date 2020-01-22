@@ -16,5 +16,6 @@ main_autogen/
 nohup.out
 settings.json
 .vscode
+*.log
 
 !data/.gitkeep

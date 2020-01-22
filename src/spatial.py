@@ -148,6 +148,8 @@ class Spatial():
                         path = root + line.strip()
 
                         img = Image.open(path)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
                         img = self.img_channels(img)
 
                         vec = self.extract_regions(img)
@@ -183,6 +185,8 @@ class Spatial():
                         path = root + line.strip()
 
                         img = Image.open(path)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
                         img = self.img_channels(img)
 
                         vec = self.extract_regions(img)
@@ -193,7 +197,7 @@ class Spatial():
                         print(str(e))
                         return
             print('')
-            
+
             with open(self.test_sun397_path_spatial + '_testing_{:0>2d}'.format(i+1), 'wb') as fp:
                 pickle.dump({'X':X_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
