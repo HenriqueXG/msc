@@ -4,7 +4,7 @@
     "arch_scene":"resnet-50-Places",
     "arch_obj":"resnet-18-ImageNet",
     "dataset":"indoor",
-    "sun397_it": "01",
+    "sun397_it": 1,
     "alpha":0.5,
     "pam_threshold":0.5,
     "hidden_units": 1000,

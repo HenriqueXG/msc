@@ -65,7 +65,7 @@ class PAM():
             self.test_sun397()
 
         # SUN 397
-        self.train_sun397_path_pam = os.path.join(self.config['path'], 'data', 'train_sun397_pam_' + self.config['sun397_it'] + '.pkl')
+        self.train_sun397_path_pam = os.path.join(self.config['path'], 'data', 'train_sun397_pam_{:0>2d}.pkl'.format(self.config['sun397_it']))
         if os.path.exists(self.train_sun397_path_pam) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (train)...')
             with open(self.train_sun397_path_pam, 'rb') as fp:
@@ -73,7 +73,7 @@ class PAM():
         elif self.config['dataset'] == 'sun397':
             self.train_sun397()
 
-        self.test_sun397_path_pam = os.path.join(self.config['path'], 'data', 'test_sun397_pam_' + self.config['sun397_it'] + '.pkl')
+        self.test_sun397_path_pam = os.path.join(self.config['path'], 'data', 'test_sun397_pam_{:0>2d}.pkl'.format(self.config['sun397_it']))
         if os.path.exists(self.test_sun397_path_pam) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (test)...')
             with open(self.test_sun397_path_pam, 'rb') as fp:
