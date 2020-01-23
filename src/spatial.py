@@ -160,8 +160,9 @@ class Spatial():
                     return
         print('')
 
+        self.train_data = {'X':X_train}
         with open(self.train_sun397_path_spatial, 'wb') as fp:
-            pickle.dump({'X':X_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.train_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_sun397(self):
         # Test SUN397 scene vectors
@@ -196,8 +197,9 @@ class Spatial():
                     return
         print('')
 
+        self.test_data = {'X':X_test}
         with open(self.test_sun397_path_spatial, 'wb') as fp:
-            pickle.dump({'X':X_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.test_data, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def train_indoor(self):
         # Train Spatial Memory on MIT Indoor 67
