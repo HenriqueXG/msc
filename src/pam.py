@@ -46,26 +46,8 @@ class PAM():
             self.test_indoor()
 
         # SUN 397
-        self.train_sun397_path_pam = os.path.join(self.config['path'], 'data', 'train_sun397_pam.pkl')
-        if os.path.exists(self.train_sun397_path_pam) and self.config['dataset'] == 'sun397':
-            print('Loading PAM data (train)...')
-            with open(self.train_sun397_path_pam, 'rb') as fp:
-                self.train_data = pickle.load(fp)
-        elif self.config['dataset'] == 'sun397':
-            print('PAM train data not found!')
-            self.train_sun397()
-
-        self.test_sun397_path_pam = os.path.join(self.config['path'], 'data', 'test_sun397_pam.pkl')
-        if os.path.exists(self.test_sun397_path_pam) and self.config['dataset'] == 'sun397':
-            print('Loading PAM data (test)...')
-            with open(self.test_sun397_path_pam, 'rb') as fp:
-                self.test_data = pickle.load(fp)
-        elif self.config['dataset'] == 'sun397':
-            print('PAM test data not found!')
-            self.test_sun397()
-
-        # SUN 397
         self.train_sun397_path_pam = os.path.join(self.config['path'], 'data', 'train_sun397_pam_{:0>2d}.pkl'.format(self.config['sun397_it']))
+        print(self.train_sun397_path_pam)
         if os.path.exists(self.train_sun397_path_pam) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (train)...')
             with open(self.train_sun397_path_pam, 'rb') as fp:
