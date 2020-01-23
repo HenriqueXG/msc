@@ -39,7 +39,7 @@ class Declarative():
             self.test_indoor()
 
         # SUN 397
-        self.train_sun397_path_declarative = os.path.join(self.config['path'], 'data', 'train_sun397_declarative.pkl')
+        self.train_sun397_path_declarative = os.path.join(self.config['path'], 'data', 'train_sun397_declarative_' + self.config['sun397_it'] + '.pkl')
         if os.path.exists(self.train_sun397_path_declarative) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (train)...')
             with open(self.train_sun397_path_declarative, 'rb') as fp:
@@ -47,7 +47,7 @@ class Declarative():
         elif self.config['dataset'] == 'sun397':
             self.train_sun397()
 
-        self.test_sun397_path_declarative = os.path.join(self.config['path'], 'data', 'test_sun397_declarative.pkl')
+        self.test_sun397_path_declarative = os.path.join(self.config['path'], 'data', 'test_sun397_declarative_' + self.config['sun397_it'] + '.pkl')
         if os.path.exists(self.test_sun397_path_declarative) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (test)...')
             with open(self.test_sun397_path_declarative, 'rb') as fp:
@@ -72,83 +72,81 @@ class Declarative():
         # Train SUN397 scene vectors
         print('Training Declarative Memory - SUN 397')
 
-        for i in range(10):
-            print('Training_{:0>2d}.txt'.format(i+1))
+        print('Training_{:0>2d}.txt'.format(self.config['sun397_it']))
 
-            path_train = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Training_{:0>2d}.txt'.format(i+1))
-            root = os.path.join(self.config['path'], 'data', 'SUN397')
-            length = len(open(path_train).readlines())
+        path_train = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Training_{:0>2d}.txt'.format(self.config['sun397_it']))
+        root = os.path.join(self.config['path'], 'data', 'SUN397')
+        length = len(open(path_train).readlines())
 
-            X_train = []
-            Y_train = []
+        X_train = []
+        Y_train = []
 
-            with open(path_train, 'r', encoding='ISO-8859-1') as archive:
-                for idx, line in enumerate(archive):
-                    try:
-                        sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
+        with open(path_train, 'r', encoding='ISO-8859-1') as archive:
+            for idx, line in enumerate(archive):
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                        scene_class = line.split('/')[2] # Get name supervision from path
+                    scene_class = line.split('/')[2] # Get name supervision from path
 
-                        path = root + line.strip()
+                    path = root + line.strip()
 
-                        img = Image.open(path)
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                        img = self.img_channels(img)
+                    img = Image.open(path)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    img = self.img_channels(img)
 
-                        vec = self.img2vec.get_vec(img)
+                    vec = self.img2vec.get_vec(img)
 
-                        X_train.append(vec)
-                        Y_train.append(scene_class)
-                    except Exception as e:
-                        print('Error at {}'.format(line))
-                        print(str(e))
-                        return
-            print('')
+                    X_train.append(vec)
+                    Y_train.append(scene_class)
+                except Exception as e:
+                    print('Error at {}'.format(line))
+                    print(str(e))
+                    return
+        print('')
 
-            with open(self.train_sun397_path_declarative + '_training_{:0>2d}'.format(i+1), 'wb') as fp:
-                pickle.dump({'X':X_train, 'Y':Y_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.train_sun397_path_declarative, 'wb') as fp:
+            pickle.dump({'X':X_train, 'Y':Y_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_sun397(self):
         # Test SUN397 scene vectors
         print('Testing Declarative Memory - SUN 397')
 
-        for i in range(10):
-            print('Testing_{:0>2d}.txt'.format(i+1))
+        print('Testing_{:0>2d}.txt'.format(self.config['sun397_it']))
 
-            path_test = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Testing_{:0>2d}.txt'.format(i+1))
-            root = os.path.join(self.config['path'], 'data', 'SUN397')
-            length = len(open(path_test).readlines())
+        path_test = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Testing_{:0>2d}.txt'.format(self.config['sun397_it']))
+        root = os.path.join(self.config['path'], 'data', 'SUN397')
+        length = len(open(path_test).readlines())
 
-            X_test = []
-            Y_test = []
+        X_test = []
+        Y_test = []
 
-            with open(path_test, 'r', encoding='ISO-8859-1') as archive:
-                for idx, line in enumerate(archive):
-                    try:
-                        sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
+        with open(path_test, 'r', encoding='ISO-8859-1') as archive:
+            for idx, line in enumerate(archive):
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                        scene_class = line.split('/')[2] # Get name supervision from path
+                    scene_class = line.split('/')[2] # Get name supervision from path
 
-                        path = root + line.strip()
+                    path = root + line.strip()
 
-                        img = Image.open(path)
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                        img = self.img_channels(img)
+                    img = Image.open(path)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    img = self.img_channels(img)
 
-                        vec = self.img2vec.get_vec(img)
+                    vec = self.img2vec.get_vec(img)
 
-                        X_test.append(vec)
-                        Y_test.append(scene_class)
-                    except Exception as e:
-                        print('Error at {}'.format(line))
-                        print(str(e))
-                        return
-            print('')
+                    X_test.append(vec)
+                    Y_test.append(scene_class)
+                except Exception as e:
+                    print('Error at {}'.format(line))
+                    print(str(e))
+                    return
+        print('')
 
-            with open(self.test_sun397_path_declarative + '_testing_{:0>2d}'.format(i+1), 'wb') as fp:
-                pickle.dump({'X':X_test, 'Y':Y_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.test_sun397_path_declarative, 'wb') as fp:
+            pickle.dump({'X':X_test, 'Y':Y_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def train_indoor(self):
         # Train Declarative Memory on MIT Indoor 67 scene vectors

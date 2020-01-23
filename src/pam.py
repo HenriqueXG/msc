@@ -65,7 +65,7 @@ class PAM():
             self.test_sun397()
 
         # SUN 397
-        self.train_sun397_path_pam = os.path.join(self.config['path'], 'data', 'train_sun397_pam.pkl')
+        self.train_sun397_path_pam = os.path.join(self.config['path'], 'data', 'train_sun397_pam_' + self.config['sun397_it'] + '.pkl')
         if os.path.exists(self.train_sun397_path_pam) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (train)...')
             with open(self.train_sun397_path_pam, 'rb') as fp:
@@ -73,7 +73,7 @@ class PAM():
         elif self.config['dataset'] == 'sun397':
             self.train_sun397()
 
-        self.test_sun397_path_pam = os.path.join(self.config['path'], 'data', 'test_sun397_pam.pkl')
+        self.test_sun397_path_pam = os.path.join(self.config['path'], 'data', 'test_sun397_pam_' + self.config['sun397_it'] + '.pkl')
         if os.path.exists(self.test_sun397_path_pam) and self.config['dataset'] == 'sun397':
             print('Loading declarative data (test)...')
             with open(self.test_sun397_path_pam, 'rb') as fp:
@@ -98,167 +98,161 @@ class PAM():
         # Train SUN397 scene vectors
         print('Training PAM - SUN 397')
 
-        for i in range(10):
-            print('Training_{:0>2d}.txt'.format(i+1))
+        print('Training_{:0>2d}.txt'.format(self.config['sun397_it']))
 
-            path_train = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Training_{:0>2d}.txt'.format(i+1))
-            root = os.path.join(self.config['path'], 'data', 'SUN397')
-            length = len(open(path_train).readlines())
+        path_train = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Training_{:0>2d}.txt'.format(self.config['sun397_it']))
+        root = os.path.join(self.config['path'], 'data', 'SUN397')
+        length = len(open(path_train).readlines())
 
-            X_train = []
+        X_train = []
 
-            with open(path_train, 'r', encoding='ISO-8859-1') as archive:
-                for idx, line in enumerate(archive):
-                    try:
-                        sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
+        with open(path_train, 'r', encoding='ISO-8859-1') as archive:
+            for idx, line in enumerate(archive):
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                        path = root + line.strip()
+                    path = root + line.strip()
 
-                        ## YOLO
+                    ## YOLO
 
-                        im_fname = utils.download('', path = path)
-                        img = Image.open(im_fname)
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                            img.save(im_fname)
-                        x, img = data.transforms.presets.rcnn.load_test(im_fname)
+                    im_fname = utils.download('', path = path)
+                    img = Image.open(im_fname)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                        img.save(im_fname)
+                    x, img = data.transforms.presets.rcnn.load_test(im_fname)
 
-                        box_ids, sscores, bboxes = self.net(x)
+                    box_ids, sscores, bboxes = self.net(x)
 
-                        boxes = []
-                        scores = []
-                        ids = []
-                        for i in range(len(sscores[0])):
-                            if sscores[0][i][0] > float(self.config['pam_threshold']): # Choose only detections that have confident higher than a threshold
-                                boxes.append(bboxes.asnumpy()[0][i])
-                                scores.append(float(sscores.asnumpy()[0][i][0]))
-                                ids.append(int(box_ids.asnumpy()[0][i][0]))
-                        
-                        ids = [*set(ids)]
-                        
-                        ids_bool = list([0] * len(self.coco_classes))
+                    boxes = []
+                    scores = []
+                    ids = []
+                    for i in range(len(sscores[0])):
+                        if sscores[0][i][0] > float(self.config['pam_threshold']): # Choose only detections that have confident higher than a threshold
+                            boxes.append(bboxes.asnumpy()[0][i])
+                            scores.append(float(sscores.asnumpy()[0][i][0]))
+                            ids.append(int(box_ids.asnumpy()[0][i][0]))
+                    
+                    ids = [*set(ids)]
+                    
+                    ids_bool = list([0] * len(self.coco_classes))
 
-                        for i in ids:
-                            ids_bool[i] = 1
+                    for i in ids:
+                        ids_bool[i] = 1
 
-                        ## ImageNet
+                    ## ImageNet
 
-                        img = self.img_channels(img)
-                        img = Image.fromarray(np.uint8(img))
+                    img = self.img_channels(img)
+                    img = Image.fromarray(np.uint8(img))
 
-                        vec = []
-                        for b in boxes:
-                            x1 = b[0]
-                            y1 = b[1]
-                            x2 = b[2]
-                            y2 = b[3]
+                    vec = []
+                    for b in boxes:
+                        x1 = b[0]
+                        y1 = b[1]
+                        x2 = b[2]
+                        y2 = b[3]
 
-                            box = (x1, y1, x2, y2)
-                            region = img.crop(box)
-                            vec.append(self.img2vec.get_vec(region).tolist())
-                        vec = [float(sum(l))/len(l) for l in zip(*vec)]
+                        box = (x1, y1, x2, y2)
+                        region = img.crop(box)
+                        vec.append(self.img2vec.get_vec(region).tolist())
+                    vec = [float(sum(l))/len(l) for l in zip(*vec)]
 
-                        if len(vec) == 0:
-                            vec = np.zeros(self.img2vec.layer_output_size_pool).tolist()
+                    if len(vec) == 0:
+                        vec = np.zeros(self.img2vec.layer_output_size_pool).tolist()
 
-                        ## Join vectors
+                    ## Join vectors
 
-                        join_vec = ids_bool + list(vec)
+                    join_vec = ids_bool + list(vec)
 
-                        X_train.append(join_vec)
-                    except Exception as e:
-                        with open(os.path.join(self.config['path'], 'error_training_{:0>2d}.log'.format(i+1)), 'a') as log_file:
-                            log_file.write('Error at {} \n'.format(line))
-                            log_file.write(str(e) + '\n')
-                            log_file.write('@@@\n')
-                        pass
-            print('')
+                    X_train.append(join_vec)
+                except Exception as e:
+                    print('Error at {}'.format(line))
+                    print(str(e))
+                    return
+        print('')
 
-            with open(self.train_sun397_path_pam + '_training_{:0>2d}'.format(i+1), 'wb') as fp:
-                pickle.dump({'X':X_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.train_sun397_path_pam, 'wb') as fp:
+            pickle.dump({'X':X_train}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def test_sun397(self):
         # Test SUN397 scene vectors
         print('Testing PAM - SUN 397')
 
-        for i in range(10):
-            print('Testing_{:0>2d}.txt'.format(i+1))
+        print('Testing_{:0>2d}.txt'.format(self.config['sun397_it']))
 
-            path_test = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Testing_{:0>2d}.txt'.format(i+1))
-            root = os.path.join(self.config['path'], 'data', 'SUN397')
-            length = len(open(path_test).readlines())
+        path_test = os.path.join(self.config['path'], 'data', 'SUNPartitions', 'Testing_{:0>2d}.txt'.format(self.config['sun397_it']))
+        root = os.path.join(self.config['path'], 'data', 'SUN397')
+        length = len(open(path_test).readlines())
 
-            X_test = []
+        X_test = []
 
-            with open(path_test, 'r', encoding='ISO-8859-1') as archive:
-                for idx, line in enumerate(archive):
-                    try:
-                        sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
+        with open(path_test, 'r', encoding='ISO-8859-1') as archive:
+            for idx, line in enumerate(archive):
+                try:
+                    sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                        path = root + line.strip()
+                    path = root + line.strip()
 
-                        ## YOLO
+                    ## YOLO
 
-                        im_fname = utils.download('', path = path)
-                        img = Image.open(im_fname)
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                            img.save(im_fname)
-                        x, img = data.transforms.presets.rcnn.load_test(im_fname)
+                    im_fname = utils.download('', path = path)
+                    img = Image.open(im_fname)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                        img.save(im_fname)
+                    x, img = data.transforms.presets.rcnn.load_test(im_fname)
 
-                        box_ids, sscores, bboxes = self.net(x)
+                    box_ids, sscores, bboxes = self.net(x)
 
-                        boxes = []
-                        scores = []
-                        ids = []
-                        for i in range(len(sscores[0])):
-                            if sscores[0][i][0] > float(self.config['pam_threshold']): # Choose only detections that have confident higher than a threshold
-                                boxes.append(bboxes.asnumpy()[0][i])
-                                scores.append(float(sscores.asnumpy()[0][i][0]))
-                                ids.append(int(box_ids.asnumpy()[0][i][0]))
-                        
-                        ids = [*set(ids)]
-                        
-                        ids_bool = list([0] * len(self.coco_classes))
+                    boxes = []
+                    scores = []
+                    ids = []
+                    for i in range(len(sscores[0])):
+                        if sscores[0][i][0] > float(self.config['pam_threshold']): # Choose only detections that have confident higher than a threshold
+                            boxes.append(bboxes.asnumpy()[0][i])
+                            scores.append(float(sscores.asnumpy()[0][i][0]))
+                            ids.append(int(box_ids.asnumpy()[0][i][0]))
+                    
+                    ids = [*set(ids)]
+                    
+                    ids_bool = list([0] * len(self.coco_classes))
 
-                        for i in ids:
-                            ids_bool[i] = 1
+                    for i in ids:
+                        ids_bool[i] = 1
 
-                        ## ImageNet
+                    ## ImageNet
 
-                        img = self.img_channels(img)
-                        img = Image.fromarray(np.uint8(img))
+                    img = self.img_channels(img)
+                    img = Image.fromarray(np.uint8(img))
 
-                        vec = []
-                        for b in boxes:
-                            x1 = b[0]
-                            y1 = b[1]
-                            x2 = b[2]
-                            y2 = b[3]
+                    vec = []
+                    for b in boxes:
+                        x1 = b[0]
+                        y1 = b[1]
+                        x2 = b[2]
+                        y2 = b[3]
 
-                            box = (x1, y1, x2, y2)
-                            region = img.crop(box)
-                            vec.append(self.img2vec.get_vec(region).tolist())
-                        vec = [float(sum(l))/len(l) for l in zip(*vec)]
+                        box = (x1, y1, x2, y2)
+                        region = img.crop(box)
+                        vec.append(self.img2vec.get_vec(region).tolist())
+                    vec = [float(sum(l))/len(l) for l in zip(*vec)]
 
-                        if len(vec) == 0:
-                            vec = np.zeros(self.img2vec.layer_output_size_pool).tolist()
+                    if len(vec) == 0:
+                        vec = np.zeros(self.img2vec.layer_output_size_pool).tolist()
 
-                        ## Join vectors
+                    ## Join vectors
 
-                        join_vec = ids_bool + list(vec)
+                    join_vec = ids_bool + list(vec)
 
-                        X_test.append(join_vec)
-                    except Exception as e:
-                        with open(os.path.join(self.config['path'], 'error_testing_{:0>2d}.log'.format(i+1)), 'a') as log_file:
-                            log_file.write('Error at {} \n'.format(line))
-                            log_file.write(str(e) + '\n')
-                            log_file.write('@@@\n')
-                        pass
-            print('')
+                    X_test.append(join_vec)
+                except Exception as e:
+                    print('Error at {}'.format(line))
+                    print(str(e))
+                    return
+        print('')
 
-            with open(self.test_sun397_path_pam + '_testing_{:0>2d}'.format(i+1), 'wb') as fp:
-                pickle.dump({'X':X_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(self.test_sun397_path_pam, 'wb') as fp:
+            pickle.dump({'X':X_test}, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
     def train_indoor(self):
         # Train PAM of MIT Indoor 67
