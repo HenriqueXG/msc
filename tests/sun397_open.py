@@ -32,6 +32,7 @@ def img_channels(img):
 
 root = os.path.join(config['path'], 'data', 'SUN397')
 path = root + '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg'
+path_train = os.path.join(config['path'], 'data', 'SUNPartitions', 'Training_{:0>2d}.txt'.format(config['sun397_it']))
 
 ## YOLO
 
@@ -41,3 +42,9 @@ if img.mode != 'RGB':
     img = img.convert('RGB')
     img.save(im_fname)
 x, img = data.transforms.presets.rcnn.load_test(im_fname)
+
+
+with open(path_train, 'r', encoding='ISO-8859-1') as archive:
+    for idx, line in enumerate(archive):
+        scene_class = line.split('/')[-2]
+        print(scene_class)
