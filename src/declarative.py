@@ -86,7 +86,8 @@ class Declarative():
                 try:
                     sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                    scene_class = line.split('/')[-2] # Get name supervision from path
+                    scene_class = line.split('/')[1:-1] # Get name supervision from path
+                    scene_class = '@'.join(scene_class)
 
                     path = root + line.strip()
 
@@ -127,7 +128,8 @@ class Declarative():
                 try:
                     sys.stdout.write('Reading... ' + str(idx+1) + '/' + str(length) + '\r')
 
-                    scene_class = line.split('/')[-2] # Get name supervision from path
+                    scene_class = line.split('/')[1:-1] # Get name supervision from path
+                    scene_class = '@'.join(scene_class)
 
                     path = root + line.strip()
 

@@ -12,11 +12,13 @@ config = {}
 with open('config.json', 'r') as fp:
     config = json.load(fp)
 
-path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_1_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
 with open(path_r, 'rb') as fp:
     classes_predicted = pickle.load(fp)
 
-path_test = os.path.join(config['path'], 'data', 'test_indoor_declarative.pkl')
+path_test = os.path.join(config['path'], 'data', f"test_{config['dataset']}_declarative.pkl")
+if not os.path.exists(path_test):
+    path_test = os.path.join(config['path'], 'data', "test_sun397_declarative_{:0>2d}.pkl".format(config['sun397_it']))
 with open(path_test, 'rb') as fp:
     test_data = pickle.load(fp)
 
