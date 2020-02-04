@@ -6,4 +6,5 @@ torch
 torchvision
 cython
 mxnet
+pandas
 pillow==6.2
