@@ -74,7 +74,7 @@ Configure ```config.json``` file:
 ```jsonc
 {
 "path":"{path/to/msc}", 
-"arch_pam":"yolo3_darknet53_coco", #(YOLO architecture)
+"arch_pam":"yolo3_darknet53_coco", (YOLO architecture)
 "arch_scene":"resnet-50-Places", (Places-CNN)
 "arch_obj":"resnet-18-ImageNet", (ImageNet-CNN)
 "dataset":"{indoor||sun397}", (select dataset)
