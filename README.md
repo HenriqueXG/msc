@@ -71,7 +71,7 @@ Extract the partitions folder content into ```data/SUNPartitions```
   
 
 Configure ```config.json``` file:
-```json
+```jsonc
 {
 "path":"{path/to/msc}", 
 "arch_pam":"yolo3_darknet53_coco", #(YOLO architecture)
