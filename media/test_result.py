@@ -8,7 +8,7 @@ import json
 import pandas
 from scipy import signal
 from sklearn import metrics
-from sklearn.metrics import precision_recall_curve, roc_curve
+from sklearn.metrics import precision_recall_curve, roc_curve, average_precision_score
 
 config = {}
 with open('config.json', 'r') as fp:
@@ -19,7 +19,7 @@ if config['dataset'] == 'indoor':
 else:
     n_classes = 397
 
-path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_1_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
 with open(path_r, 'rb') as fp:
     classes_predicted = pickle.load(fp)
 
@@ -55,25 +55,22 @@ for i in range(n_classes):
 plt.xlabel("Recall")
 plt.ylabel("Precision")
 plt.title("Precision vs Recall curves")
-print(precision[0])
+
 plt.savefig(os.path.join(config['path'], 'media', 'images', f"pr_{config['dataset']}.png"), dpi=300)
 plt.show()
 
-precisions = [signal.resample(i, 100) for i in precision.values()]
-means = []
-std = []
-for i in range(len(precisions[0].tolist())):
-    p = []
-    for j in range(len(precisions)):
-        p.append(precisions[j][i])
-    means.append(np.mean(p))
-    std.append(np.std(p))
+precision, recall, _ = precision_recall_curve(np.array(classes_predicted['y_test']).ravel(), np.array(classes_predicted['predictions']).ravel())
+average_precision = average_precision_score(np.array(classes_predicted['y_test']), np.array(classes_predicted['predictions']), average="micro")
 
-plt.plot(means, label='Mean')
-plt.plot(std, label='Std. deviation')
-plt.legend()
-plt.xlabel("Sample of Recall")
-plt.ylabel("Value")
+plt.plot(recall, precision, 'k--',
+         label='micro-average Precision-Recall curve (area = {0:0.2f})'
+               ''.format(average_precision))
+plt.fill_between(recall, precision, color='#539ecd')
 
-plt.savefig(os.path.join(config['path'], 'media', 'images', f"pr_obs_{config['dataset']}.png"), dpi=300)
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.title("Precision vs Recall micro-average curve")
+plt.legend(loc="lower left")
+
+plt.savefig(os.path.join(config['path'], 'media', 'images', f"pr_avg_{config['dataset']}.png"), dpi=300)
 plt.show()

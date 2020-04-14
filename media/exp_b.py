@@ -40,6 +40,7 @@ for pam_threshold in pam_thresholds:
                                 x = np.arange(len(results))
                                 ax.bar(x, results)
 
+                                ax.set_title("Mean: %.3f" % round(mean, 3) + ' | ' + "Std: %.3f" % round(std, 3))
                                 ax.set_ylim(0.6,1.0)
                                 ax.set_xlabel('Runs')
                                 ax.set_ylabel('Accuracy')
@@ -72,6 +73,7 @@ fig, ax = plt.subplots()
 x = np.arange(len(results))
 ax.bar(x, results)
 
+ax.set_title("Mean: %.3f" % round(mean, 3) + ' | ' + "Std: %.3f" % round(std, 3))
 ax.set_ylim(0.6,1.0)
 ax.set_xlabel('Runs')
 ax.set_ylabel('Accuracy')
