@@ -19,7 +19,7 @@ if config['dataset'] == 'indoor':
 else:
     n_classes = 397
 
-path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_1_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
+path_r = os.path.join(config['path'], 'media', f"test_result_{config['pam_threshold']}_{config['alpha']}_{config['dataset']}_{config['kernel']}_{config['hidden_units']}_{config['activation']}_{config['optimizer']}.pkl")
 with open(path_r, 'rb') as fp:
     classes_predicted = pickle.load(fp)
 
