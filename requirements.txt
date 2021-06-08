@@ -7,4 +7,4 @@ torchvision
 cython
 mxnet
 pandas
-pillow==6.2
+pillow==8.2.0
